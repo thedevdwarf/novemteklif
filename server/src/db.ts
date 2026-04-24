@@ -39,7 +39,7 @@ async function ensureIndexes(db: Db): Promise<void> {
   await p.createIndex({ proposalNo: 1, revision: 1 }, { unique: true });
   await p.createIndex(
     { previewToken: 1 },
-    { unique: true, sparse: true, partialFilterExpression: { previewToken: { $type: "string" } } },
+    { unique: true, partialFilterExpression: { previewToken: { $type: "string" } } },
   );
   await p.createIndex(
     { "customer.tradeName": "text", "customer.contactPerson": "text" },
