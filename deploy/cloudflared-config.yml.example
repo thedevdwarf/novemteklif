@@ -1,0 +1,21 @@
+# ~/.cloudflared/config.yml örneği
+# Kurulum:
+#   cloudflared tunnel login
+#   cloudflared tunnel create teklify
+#   cloudflared tunnel route dns teklify teklif.novem.com.tr
+#   cp deploy/cloudflared-config.yml.example ~/.cloudflared/config.yml
+#   ($USER ve <UUID> değerlerini düzenle)
+#   cloudflared tunnel run teklify
+
+tunnel: <UUID-buraya>
+credentials-file: /home/$USER/.cloudflared/<UUID-buraya>.json
+
+# YALNIZCA public listener'a (port 7879) trafik forward edilir.
+# Internal :7878 (MCP + admin) asla expose edilmez.
+ingress:
+  - hostname: teklif.novem.com.tr
+    service: http://127.0.0.1:7879
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 10s
+  - service: http_status:404

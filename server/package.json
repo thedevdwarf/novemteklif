@@ -1,0 +1,32 @@
+{
+  "name": "novem-teklif-server",
+  "version": "0.1.0",
+  "description": "Novem teklif yönetim servisi — MCP + HTTP",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.11"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node --enable-source-maps dist/index.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "handlebars": "^4.7.8",
+    "mongodb": "^6.12.0",
+    "nanoid": "^5.0.9",
+    "playwright": "^1.49.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

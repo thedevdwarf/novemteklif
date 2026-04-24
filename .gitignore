@@ -5,3 +5,13 @@
 .vscode/
 node_modules/
 *.pdf
+
+# server build / runtime
+server/dist/
+server/node_modules/
+server/.env
+server/.env.local
+server/sample-output.html
+
+# WSL Playwright cache (eğer repo içine düşerse)
+.cache/
