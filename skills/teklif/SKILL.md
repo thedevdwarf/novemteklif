@@ -21,6 +21,10 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
 | "yeni link", "link süresi dolmuş", "linki yenile" | `regenerate_preview_token` |
 | "gönderildi olarak işaretle", "kabul edildi" | `set_status` |
 | "sil bu teklifi" | `delete_proposal` *(açık onay al)* |
+| **"beni kaydet, ben X" / "Aziz olarak kaydet"** | `register_member` |
+| **"ekip / takım listesi", "kim var?"** | `list_members` |
+| **"X kim?", "Aziz hakkında"** | `get_member` |
+| **"X'i ekipten sil"** | `forget_member` *(açık onay al)* |
 
 ## Davranış kuralları
 
@@ -37,6 +41,11 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
    **Not (`note`):** Default boş — fiyat sayfasında not kutusu çıkmaz. Sadece kullanıcı *"şu notu ekle / şunu yaz"* derse `note` parametresine onun verdiği metni koy. Sen kendiliğinden default not üretme.
 10. **Asla** teklif numarası / revizyon / token üretmeye çalışma. Hepsi server tarafında.
 11. **Hata durumunda** `isError: true` döndüyse mesajı kullanıcıya doğal Türkçe ile aktar, başka tool deneme.
+12. **Ekip defteri:** İlk mesaj geldiğinde (yeni session) bir kez `list_members` çağırarak Novem ekibini tanı. Üyelerin isimleri, rolleri ve (varsa) Telegram ID'leri context'te kalsın. Sonra:
+    - Kullanıcı *"beni kaydet, ben Osman"* / *"Aziz olarak kaydet"* / *"Mehmet'i ekibe ekle, satış sorumlusu"* gibi bir şey derse → `register_member({ name, role?, notes? })`. Telegram ID'sini kullanıcı söylemediyse sorma — kayıt isim bazlı yeterli.
+    - Bir kişi *"X teklif yaptı mı?"* / *"Aziz'in son teklifi"* derse → önce `list_members` ile X'i bul, sonra ilgili teklifi `search_proposals` ile ara.
+    - **`preparer` alanı için tercihen `list_members`'da olan biri kullan**; kullanıcı kayıtlı değilse register et, sonra teklifte kullan.
+    - Tanımadığın bir Türkçe isim çıkarsa kullanıcıya sor: *"X'i ekibe kaydedeyim mi?"*
 
 ## Örnek diyalog
 

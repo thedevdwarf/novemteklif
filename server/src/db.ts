@@ -1,6 +1,7 @@
 import { MongoClient, type Db, type Collection } from "mongodb";
 import { config } from "./config.js";
 import type { ProposalDoc, CounterDoc } from "./proposals/types.js";
+import * as teamRepo from "./team/repository.js";
 
 let client: MongoClient | null = null;
 let db: Db | null = null;
@@ -12,6 +13,7 @@ export async function connectDb(): Promise<Db> {
   });
   await client.connect();
   db = client.db(config.mongoDb);
+  teamRepo.init(db);
   await ensureIndexes(db);
   return db;
 }
@@ -49,4 +51,11 @@ async function ensureIndexes(db: Db): Promise<void> {
   await p.createIndex({ createdAt: -1 });
   await p.createIndex({ parentId: 1 });
   await p.createIndex({ clonedFromId: 1 });
+
+  const t = db.collection("team_members");
+  await t.createIndex({ name: 1 }, { unique: true, collation: { locale: "tr", strength: 2 } });
+  await t.createIndex(
+    { telegramId: 1 },
+    { unique: true, partialFilterExpression: { telegramId: { $type: "string" } } },
+  );
 }

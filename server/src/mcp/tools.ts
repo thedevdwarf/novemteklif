@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as service from "../proposals/service.js";
+import * as team from "../team/service.js";
 import { renderPdf } from "../render/pdf.js";
 
 const customerSchema = z
@@ -254,6 +255,79 @@ export function registerTools(mcp: McpServer): void {
       }
     },
   );
+
+  // ────────── EKİP ÜYELERİ ──────────
+
+  mcp.tool(
+    "register_member",
+    "Bir ekip üyesini (Novem Yazılım personeli) takım defterine kaydeder veya günceller. " +
+      "Kullanıcı 'beni kaydet, ben Osman' / 'Aziz olarak kaydet' / 'Mehmet'i ekibe ekle' " +
+      "tarzı bir şey derse çağır. İsim aynıysa üzerine yazar (upsert). " +
+      "telegramId opsiyonel ama varsa kayıt et — gelecekte sender'ı tanımak için kritik. " +
+      "role örn. 'satış', 'yönetici', 'destek'.",
+    {
+      name: z.string().min(1).describe("Üyenin tam adı, örn. 'Osman Tuzcu'"),
+      telegramId: z.string().regex(/^\d+$/).optional().describe("Telegram numerik user ID'si (sadece rakam)"),
+      role: z.string().optional().describe("Görev/rol, örn. 'satış sorumlusu'"),
+      notes: z.string().optional().describe("Serbest not, örn. 'POS uzmanı'"),
+    },
+    async (args) => {
+      try {
+        const r = await team.registerMember(args);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "list_members",
+    "Tüm kayıtlı ekip üyelerini listeler. Her session başında bir kez çağırarak ekibi tanı. " +
+      "Bir kişi ('Osman', 'Aziz' vb.) ile ilgili soru gelirse de buradan kontrol et.",
+    {},
+    async () => {
+      try {
+        const r = await team.listMembers();
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "get_member",
+    "Tek bir ekip üyesini ID veya isimle getirir.",
+    { idOrName: z.string().min(1) },
+    async ({ idOrName }) => {
+      try {
+        const r = await team.getMember(idOrName);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "forget_member",
+    "Bir ekip üyesini takım defterinden siler. Kullanıcıdan açık onay al ('evet sil').",
+    {
+      idOrName: z.string().min(1),
+      confirm: z.literal(true).describe("Silmeyi onaylamak için true."),
+    },
+    async ({ idOrName }) => {
+      try {
+        const deleted = await team.forgetMember(idOrName);
+        return ok({ deleted });
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  // ────────── TEKLİF SİLME ──────────
 
   mcp.tool(
     "delete_proposal",
