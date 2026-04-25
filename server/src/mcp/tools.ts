@@ -29,6 +29,13 @@ const currencySchema = z
   .enum(["TRY", "USD", "EUR"])
   .describe('Para birimi. "TRY" (₺ — varsayılan), "USD" ($), "EUR" (€). Teklifin tüm kalemleri aynı para birimindedir.');
 
+const preparerSchema = z
+  .string()
+  .min(1)
+  .describe(
+    'Teklifi hazırlayan Novem personelinin tam adı, örn. "Osman Tuzcu". Kapakta "Saygılarımızla" satırının altında imza olarak görünür. ZORUNLU — kullanıcı söylemediyse SOR.',
+  );
+
 const titleSchema = z
   .object({
     main: z.string().optional().describe('Kapak başlığı, örn. "Novem POS" veya "Mikrotik Hotspot Çözümü"'),
@@ -42,6 +49,7 @@ const patchSchema = z
     customer: customerSchema.partial().optional(),
     title: titleSchema,
     currency: currencySchema.optional(),
+    preparer: preparerSchema.optional(),
     items: z.array(itemSchema).optional(),
     note: z
       .string()
@@ -78,6 +86,7 @@ export function registerTools(mcp: McpServer): void {
       "değilse TRY (varsayılan). Tüm fiyatlar KDV hariçtir, KDV satırı çıktılarda gösterilmez.",
     {
       customer: customerSchema,
+      preparer: preparerSchema,
       items: z.array(itemSchema).min(1),
       title: titleSchema,
       currency: currencySchema.optional(),

@@ -41,6 +41,7 @@ export interface ProposalDoc {
   customer: Customer;
   title: Title;
   currency: Currency;
+  preparer: string;
   items: Item[];
   totals: Totals;
   note?: string;
@@ -66,6 +67,7 @@ export interface ProposalPatch {
   customer?: Partial<Customer>;
   title?: Partial<Title>;
   currency?: Currency;
+  preparer?: string;
   items?: ItemInput[];
   note?: string | null;
   monthly?: number | null;
@@ -74,6 +76,7 @@ export interface ProposalPatch {
 
 export interface CreateProposalInput {
   customer: Customer;
+  preparer: string;
   items: ItemInput[];
   title?: Partial<Title>;
   currency?: Currency;

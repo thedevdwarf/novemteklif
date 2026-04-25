@@ -43,6 +43,12 @@ function normalizeCurrency(c?: string | null): Currency {
   return upper;
 }
 
+function normalizePreparer(p?: string | null): string {
+  const t = (p ?? "").trim();
+  if (!t) throw new ValidationError("Teklifi hazırlayan kişinin adı zorunlu");
+  return t;
+}
+
 function computeItems(items: ItemInput[]): Item[] {
   return items.map((it) => {
     if (!it.name?.trim()) throw new ValidationError("Kalem adı boş olamaz");
@@ -101,6 +107,7 @@ export interface ProposalView {
   customer: Customer;
   title: Title;
   currency: Currency;
+  preparer: string;
   items: Item[];
   totals: Totals;
   note?: string;
@@ -124,6 +131,7 @@ export function toView(d: ProposalDoc): ProposalView {
     customer: d.customer,
     title: d.title,
     currency: d.currency ?? DEFAULT_CURRENCY,
+    preparer: d.preparer ?? "Novem Yazılım",
     items: d.items,
     totals: d.totals,
     status: d.status,
@@ -148,6 +156,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
   const customer = normalizeCustomer(input.customer);
   const items = computeItems(input.items);
   const currency = normalizeCurrency(input.currency);
+  const preparer = normalizePreparer(input.preparer);
   const totals = computeTotals(items, input.monthly);
   const date = input.date ?? new Date();
   const seq = await repo.nextSeq(date.getFullYear());
@@ -166,6 +175,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
     customer,
     title,
     currency,
+    preparer,
     items,
     totals,
     status: "draft",
@@ -202,6 +212,7 @@ export async function updateProposal(idOrNo: string, patch: ProposalPatch): Prom
     : cur.customer;
   const items = patch.items ? computeItems(patch.items) : cur.items;
   const currency = patch.currency ? normalizeCurrency(patch.currency) : (cur.currency ?? DEFAULT_CURRENCY);
+  const preparer = patch.preparer !== undefined ? normalizePreparer(patch.preparer) : (cur.preparer ?? "Novem Yazılım");
   const monthly =
     patch.monthly === null
       ? undefined
@@ -221,6 +232,7 @@ export async function updateProposal(idOrNo: string, patch: ProposalPatch): Prom
     customer,
     items,
     currency,
+    preparer,
     totals,
     title,
     ...(patch.date ? { date: patch.date } : {}),
@@ -241,6 +253,7 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
     : cur.customer;
   const items = patch?.items ? computeItems(patch.items) : cur.items;
   const currency = patch?.currency ? normalizeCurrency(patch.currency) : (cur.currency ?? DEFAULT_CURRENCY);
+  const preparer = patch?.preparer !== undefined ? normalizePreparer(patch.preparer) : (cur.preparer ?? "Novem Yazılım");
   const monthly =
     patch?.monthly === null
       ? undefined
@@ -261,6 +274,7 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
     customer,
     title,
     currency,
+    preparer,
     items,
     totals,
     status: "draft",
@@ -291,6 +305,7 @@ export async function cloneProposalForCustomer(
   const customer = normalizeCustomer({ ...newCustomer });
   const items = patch?.items ? computeItems(patch.items) : src.items;
   const currency = patch?.currency ? normalizeCurrency(patch.currency) : (src.currency ?? DEFAULT_CURRENCY);
+  const preparer = patch?.preparer !== undefined ? normalizePreparer(patch.preparer) : (src.preparer ?? "Novem Yazılım");
   const monthly =
     patch?.monthly === null
       ? undefined
@@ -315,6 +330,7 @@ export async function cloneProposalForCustomer(
     customer,
     title,
     currency,
+    preparer,
     items,
     totals,
     status: "draft",

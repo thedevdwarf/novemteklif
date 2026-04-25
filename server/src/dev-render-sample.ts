@@ -20,6 +20,7 @@ const sample: ProposalDoc = {
   },
   title: { main: "Novem POS", accent: "Restoran Çözümü" },
   currency: "TRY",
+  preparer: "Osman Tuzcu",
   items: [
     { name: "Termal Yazıcı", qty: 4, unitPrice: 100, total: 400 },
     { name: "Mikrotik RBD52G-5HacD2HnD-TC", qty: 1, unitPrice: 4500, total: 4500 },

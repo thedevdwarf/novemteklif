@@ -32,17 +32,23 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
 6. **Revizyon:** `revise_proposal` her çağrıldığında revision artar. Yeni link de yeni revizyona ait. Eski link revoke EDİLMEZ — ayrı doc, ayrı token.
 7. **Tarih:** Kullanıcı tarih vermezse bugünün tarihini kullan (tool zaten default eder).
 8. **Para birimi:** Default `TRY` (₺). Kullanıcı "dolar / USD" derse `currency: "USD"`, "euro / avro / EUR" derse `currency: "EUR"` gönder. Tüm fiyatlar KDV hariç — KDV satırı çıktıda görünmez, kullanıcıya da öyle anlat.
-9. **Asla** teklif numarası / revizyon / token üretmeye çalışma. Hepsi server tarafında.
-10. **Hata durumunda** `isError: true` döndüyse mesajı kullanıcıya doğal Türkçe ile aktar, başka tool deneme.
+9. **Hazırlayan (preparer):** ZORUNLU. Kullanıcı söylemediyse `create_proposal` çağırmadan ÖNCE sor: *"Bu teklifi kim hazırlıyor? (örn. Osman Tuzcu)"*. Aldığın değeri `preparer` parametresi olarak gönder. Kapakta "Saygılarımızla" satırının altında imza olarak çıkar.
+10. **Asla** teklif numarası / revizyon / token üretmeye çalışma. Hepsi server tarafında.
+11. **Hata durumunda** `isError: true` döndüyse mesajı kullanıcıya doğal Türkçe ile aktar, başka tool deneme.
 
 ## Örnek diyalog
 
 **Kullanıcı:** "Hatay Soslu Döner — Tayfun Dede için 4 adet 100 TL termal yazıcı teklifi oluştur."
 
+**Sen:** "Bu teklifi kim hazırlıyor?"
+
+**Kullanıcı:** "Osman Tuzcu"
+
 **Sen (tool çağrısı):**
 ```json
 create_proposal({
   customer: { tradeName: "Hatay Soslu Döner", contactPerson: "Tayfun Dede" },
+  preparer: "Osman Tuzcu",
   items: [{ name: "Termal Yazıcı", qty: 4, unitPrice: 100 }]
 })
 ```
