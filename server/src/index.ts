@@ -3,10 +3,13 @@ import { connectDb, closeDb } from "./db.js";
 import { startBrowser, stopBrowser } from "./render/pdf.js";
 import { createInternalApp } from "./http/internal.js";
 import { createPublicApp } from "./http/public.js";
+import * as termsService from "./terms/service.js";
 
 async function main(): Promise<void> {
   await connectDb();
   console.log(`[db] connected ${config.mongoUrl} db=${config.mongoDb}`);
+
+  await termsService.ensureDefault();
 
   await startBrowser();
   console.log("[pdf] chromium ready");

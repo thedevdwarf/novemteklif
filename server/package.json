@@ -12,7 +12,8 @@
     "start": "node --enable-source-maps dist/index.js",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "migrate:customers": "node --enable-source-maps dist/scripts/migrate-customers.js"
+    "migrate:customers": "node --enable-source-maps dist/scripts/migrate-customers.js",
+    "migrate:terms": "node --enable-source-maps dist/scripts/migrate-terms.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",

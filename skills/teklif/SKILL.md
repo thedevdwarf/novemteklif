@@ -32,6 +32,11 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
 | **"X firmasının telefonunu güncelle", "vergi no ekle"** | `update_customer` |
 | **"X firmasının tekliflerini göster"** | `search_proposals({ customerName: "X" })` veya `search_proposals({ customerId })` |
 | **"X firmasını sil"** | `forget_customer` *(açık onay al)* |
+| **"koşulları göster", "default terms"** | `get_terms_template` veya `list_terms_templates` |
+| **"yeni terms şablonu", "default'tan kopya"** | `clone_terms_template` |
+| **"default terms'i güncelle"** | `update_terms_template({ idOrName: "default", ... })` *(eski tekliflere yansımaz)* |
+| **"bu teklifin garanti maddesini değiştir"** | `update_proposal_terms` *(önce get_proposal ile mevcut blocks'u çek, üzerinde değiştir, geri gönder)* |
+| **"koşulları sıfırla / default'a dön"** | `reset_proposal_terms` |
 
 ## Davranış kuralları
 
@@ -55,6 +60,14 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
     - Tanımadığın bir Türkçe isim çıkarsa kullanıcıya sor: *"X'i ekibe kaydedeyim mi?"*
 
 13. **Ekip arası mesajlaşma:** Bir kullanıcı başka bir ekip üyesine mesaj göndermek isterse (*"Osman'a şunu yaz: ..."*, *"Aziz'e haber ver"*) `send_message_to_member` çağır. Mesaj metnine **gönderen bilgisini ekle** ki alıcı kim yazdığını bilsin: örn. `"[Aziz diyor ki:] merhaba"`.
+
+15. **Koşullar (terms) sistemi:**
+    - Sayfa 5 koşulları artık DB'de `terms_templates` koleksiyonunda. Boot'ta hardcoded içerikten "default" şablon seed edilir.
+    - `create_proposal` her zaman default şablonun blocks'unu **snapshot** olarak `Proposal.terms`'e embed eder.
+    - **Master şablonu güncelleme** (`update_terms_template({ idOrName: "default", patch: { blocks } })`) sadece bundan sonraki yeni teklifleri etkiler; geçmiş tekliflerin snapshot'ı korunur (PDF/sözleşme tarihi).
+    - **Yeni varyasyon türetme**: `clone_terms_template({ sourceIdOrName: "default", newName: "POS Müşterileri" })` → daha sonra `update_terms_template` ile özelleştir, istersen `set_default_terms_template` ile aktif default yap.
+    - **Sadece tek bir teklifin koşullarını** düzenle: `update_proposal_terms({ idOrNo, blocks: [...] })` — önce `get_proposal` ile mevcut `terms` array'ini çek, agent kafasında değişikliği uygula, **tüm blocks listesini** üzerine yaz. Master şablon etkilenmez.
+    - "default'a dön" → `reset_proposal_terms({ idOrNo })`.
 
 14. **Cari (müşteri) sistemi:**
     - Her teklif bir cari'ye bağlanır. `create_proposal` otomatik olarak `tradeName` ile master kaydı bulur veya oluşturur — ekstra adım gerekmez.

@@ -3,7 +3,13 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as service from "../proposals/service.js";
 import * as team from "../team/service.js";
 import * as customers from "../customers/service.js";
+import * as terms from "../terms/service.js";
 import { renderPdf } from "../render/pdf.js";
+
+const termBlockSchema = z.object({
+  title: z.string().min(1),
+  paragraphs: z.array(z.string().min(1)).min(1),
+}).strict();
 
 const customerSchema = z
   .object({
@@ -252,6 +258,149 @@ export function registerTools(mcp: McpServer): void {
     async ({ idOrNo, status }) => {
       try {
         const r = await service.setStatus(idOrNo, status);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  // ────────── KOŞULLAR (TERMS TEMPLATES) ──────────
+
+  mcp.tool(
+    "list_terms_templates",
+    "Tüm koşullar (terms) şablonlarını listeler. 'default' her zaman bulunur, ek varyasyonlar (POS, hotspot vb.) opsiyonel.",
+    {},
+    async () => {
+      try {
+        const r = await terms.listTemplates();
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "get_terms_template",
+    "Tek bir koşullar şablonunu ID veya adıyla getirir. Tüm madde başlıkları + paragrafları görmek için.",
+    { idOrName: z.string().min(1) },
+    async ({ idOrName }) => {
+      try {
+        const r = await terms.getTemplate(idOrName);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "clone_terms_template",
+    "Mevcut bir şablonun kopyasını yeni bir adla oluşturur (varyasyon türetme). " +
+      "Örn: 'default'tan kopya 'POS Müşterileri' adıyla, sonra update_terms_template ile içeriğini özelleştir.",
+    {
+      sourceIdOrName: z.string().min(1),
+      newName: z.string().min(1).describe("Yeni şablon adı (default rezerve)"),
+      notes: z.string().optional(),
+    },
+    async ({ sourceIdOrName, newName, notes }) => {
+      try {
+        const r = await terms.cloneTemplate(sourceIdOrName, newName, notes);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "update_terms_template",
+    "Mevcut bir şablonun blocks (madde) listesini, adını veya notunu günceller. " +
+      "ÖNEMLİ: Bu sadece master template'i değiştirir; bundan sonra çıkan teklifler güncel halini snapshot alır, " +
+      "eski tekliflerin snapshot'ı DEĞİŞMEZ. Default şablonun adı değiştirilemez.",
+    {
+      idOrName: z.string().min(1),
+      patch: z.object({
+        name: z.string().optional(),
+        blocks: z.array(termBlockSchema).optional(),
+        notes: z.string().optional(),
+      }).strict(),
+    },
+    async ({ idOrName, patch }) => {
+      try {
+        const r = await terms.updateTemplate(idOrName, patch);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "set_default_terms_template",
+    "Bir şablonu default olarak işaretler (önceki default'un işareti kaldırılır). " +
+      "Bundan sonra create_proposal default şablon olarak bunun snapshot'ını alır.",
+    { idOrName: z.string().min(1) },
+    async ({ idOrName }) => {
+      try {
+        const r = await terms.setDefault(idOrName);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "delete_terms_template",
+    "Bir koşullar şablonunu siler. Default şablon silinemez. Mevcut tekliflerin snapshot'ı etkilenmez.",
+    {
+      idOrName: z.string().min(1),
+      confirm: z.literal(true),
+    },
+    async ({ idOrName }) => {
+      try {
+        const deleted = await terms.deleteTemplate(idOrName);
+        return ok({ deleted });
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  // ────────── PROPOSAL-LEVEL TERMS (snapshot edit) ──────────
+
+  mcp.tool(
+    "update_proposal_terms",
+    "Sadece bir teklifin koşullar (terms) snapshot'ını günceller. Master şablonu etkilemez. " +
+      "Kullanıcı 'bu teklifin garanti maddesini değiştir' / 'şu maddeyi çıkar' gibi bir şey derse bunu çağır. " +
+      "Tüm blocks'u eksiksiz gönder (mevcut + değişen). Önce get_proposal ile mevcut terms'i çek, üzerinde değiştir, geri gönder.",
+    {
+      idOrNo: z.string().min(3),
+      blocks: z.array(termBlockSchema).min(1).describe("Tüm madde listesi (snapshot tamamen üzerine yazılır)"),
+    },
+    async ({ idOrNo, blocks }) => {
+      try {
+        const r = await service.updateProposalTerms(idOrNo, blocks);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "reset_proposal_terms",
+    "Bir teklifin koşullar snapshot'ını bir şablondan (default veya başka) yeniden alır. " +
+      "Kullanıcı 'koşulları sıfırla / default'a dön' derse çağır. templateIdOrName boşsa default kullanılır.",
+    {
+      idOrNo: z.string().min(3),
+      templateIdOrName: z.string().optional(),
+    },
+    async ({ idOrNo, templateIdOrName }) => {
+      try {
+        const r = await service.resetProposalTermsToTemplate(idOrNo, templateIdOrName);
         return ok(r);
       } catch (e) {
         return err((e as Error).message);

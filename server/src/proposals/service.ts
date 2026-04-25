@@ -3,6 +3,8 @@ import { customAlphabet } from "nanoid";
 import { config } from "../config.js";
 import * as repo from "./repository.js";
 import * as customerService from "../customers/service.js";
+import * as termsService from "../terms/service.js";
+import type { TermBlock } from "../terms/types.js";
 import type {
   CreateProposalInput,
   ItemInput,
@@ -111,6 +113,8 @@ export interface ProposalView {
   preparer: string;
   items: Item[];
   totals: Totals;
+  terms?: TermBlock[];
+  termsTemplateId?: string;
   note?: string;
   status: ProposalStatus;
   date: Date;
@@ -147,6 +151,8 @@ export function toView(d: ProposalDoc): ProposalView {
   if (d.pdfPath) v.pdfPath = d.pdfPath;
   if (d.parentId) v.parentId = d.parentId.toHexString();
   if (d.clonedFromId) v.clonedFromId = d.clonedFromId.toHexString();
+  if (d.termsTemplateId) v.termsTemplateId = d.termsTemplateId.toHexString();
+  if (d.terms) v.terms = d.terms;
   return v;
 }
 
@@ -198,6 +204,10 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
     date,
     deletedAt: null,
   };
+  // Default terms template'i çek ve snapshot olarak embed et
+  const defaultTerms = await termsService.getDefault();
+  doc.termsTemplateId = new ObjectId(defaultTerms.id);
+  doc.terms = defaultTerms.blocks.map((b) => ({ title: b.title, paragraphs: [...b.paragraphs] }));
   if (input.note) doc.note = input.note;
   await repo.insert(doc);
   return toView(doc);
@@ -293,6 +303,8 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
     parentId: cur._id,
     clonedFromId: cur.clonedFromId ?? null,
     customerId: cur.customerId ?? null,
+    termsTemplateId: cur.termsTemplateId ?? null,
+    terms: cur.terms ? cur.terms.map((b) => ({ title: b.title, paragraphs: [...b.paragraphs] })) : undefined,
     createdAt: now,
     updatedAt: now,
     date: patch?.date ?? new Date(),
@@ -359,6 +371,8 @@ export async function cloneProposalForCustomer(
     parentId: null,
     clonedFromId: src._id,
     customerId: new ObjectId(master.id),
+    termsTemplateId: src.termsTemplateId ?? null,
+    terms: src.terms ? src.terms.map((b) => ({ title: b.title, paragraphs: [...b.paragraphs] })) : undefined,
     createdAt: now,
     updatedAt: now,
     date,
@@ -393,6 +407,34 @@ export async function setStatus(idOrNo: string, status: ProposalStatus): Promise
 export async function deleteProposal(idOrNo: string): Promise<boolean> {
   const cur = await loadOrThrow(idOrNo);
   return repo.softDelete(cur._id);
+}
+
+export async function updateProposalTerms(idOrNo: string, blocks: TermBlock[]): Promise<ProposalView> {
+  const cur = await loadOrThrow(idOrNo);
+  const cleaned: TermBlock[] = blocks.map((b, i) => {
+    const title = b.title?.trim();
+    if (!title) throw new ValidationError(`Madde ${i + 1}: başlık zorunlu`);
+    const paragraphs = (b.paragraphs ?? []).map((p) => p.trim()).filter((p) => p.length > 0);
+    if (paragraphs.length === 0) throw new ValidationError(`Madde ${i + 1} (${title}): paragraf gerekli`);
+    return { title, paragraphs };
+  });
+  if (cleaned.length === 0) throw new ValidationError("En az bir koşul maddesi gerekli");
+  const updated = await repo.update(cur._id, { terms: cleaned });
+  if (!updated) throw new NotFoundError(idOrNo);
+  return toView(updated);
+}
+
+export async function resetProposalTermsToTemplate(idOrNo: string, templateIdOrName?: string): Promise<ProposalView> {
+  const cur = await loadOrThrow(idOrNo);
+  const tpl = templateIdOrName
+    ? await termsService.getTemplate(templateIdOrName)
+    : await termsService.getDefault();
+  const updated = await repo.update(cur._id, {
+    terms: tpl.blocks.map((b) => ({ title: b.title, paragraphs: [...b.paragraphs] })),
+    termsTemplateId: new ObjectId(tpl.id),
+  });
+  if (!updated) throw new NotFoundError(idOrNo);
+  return toView(updated);
 }
 
 /**

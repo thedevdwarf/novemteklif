@@ -8,6 +8,7 @@ import { ObjectId } from "mongodb";
 import { renderProposalHtml } from "./render/template.js";
 import { toView } from "./proposals/service.js";
 import type { ProposalDoc } from "./proposals/types.js";
+import { DEFAULT_BLOCKS } from "./terms/types.js";
 
 const sample: ProposalDoc = {
   _id: new ObjectId(),
@@ -30,6 +31,7 @@ const sample: ProposalDoc = {
     subtotal: 9400,
     grandTotal: 9400,
   },
+  terms: DEFAULT_BLOCKS,
   status: "draft",
   previewToken: "aB3xYz9KqMn7vP2LqRsT",
   previewExpiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),

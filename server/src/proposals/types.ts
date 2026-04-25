@@ -1,4 +1,7 @@
 import type { ObjectId } from "mongodb";
+import type { TermBlock } from "../terms/types.js";
+
+export type { TermBlock };
 
 export interface Customer {
   tradeName: string;
@@ -52,6 +55,8 @@ export interface ProposalDoc {
   parentId?: ObjectId | null;
   clonedFromId?: ObjectId | null;
   customerId?: ObjectId | null;
+  termsTemplateId?: ObjectId | null;
+  terms?: TermBlock[];
   createdAt: Date;
   updatedAt: Date;
   date: Date;
