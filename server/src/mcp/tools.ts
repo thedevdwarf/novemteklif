@@ -21,9 +21,13 @@ const itemSchema = z
   .object({
     name: z.string().min(1).describe('Kalem adı, örn. "Termal Yazıcı" veya "Mikrotik RBD52G"'),
     qty: z.number().positive().describe("Adet"),
-    unitPrice: z.number().nonnegative().describe("Birim fiyat (TL, KDV hariç)"),
+    unitPrice: z.number().nonnegative().describe("Birim fiyat (KDV hariç). Para birimi teklifin currency alanından gelir."),
   })
   .strict();
+
+const currencySchema = z
+  .enum(["TRY", "USD", "EUR"])
+  .describe('Para birimi. "TRY" (₺ — varsayılan), "USD" ($), "EUR" (€). Teklifin tüm kalemleri aynı para birimindedir.');
 
 const titleSchema = z
   .object({
@@ -37,13 +41,13 @@ const patchSchema = z
   .object({
     customer: customerSchema.partial().optional(),
     title: titleSchema,
+    currency: currencySchema.optional(),
     items: z.array(itemSchema).optional(),
     note: z
       .string()
       .nullable()
       .optional()
       .describe("Fiyat sayfasındaki not kutusu. null gönderirsen siler."),
-    vatRate: z.number().min(0).max(100).optional(),
     monthly: z
       .number()
       .nullable()
@@ -69,13 +73,15 @@ export function registerTools(mcp: McpServer): void {
     "create_proposal",
     "Yeni bir teklif oluşturur. Kullanıcı 'X firmasına Y ürün teklifi hazırla / oluştur' dediğinde çağır. " +
       "Teklif numarası ve revizyon (1.00) otomatik atanır. Geçici bir önizleme bağlantısı (previewUrl) döner; " +
-      "kullanıcıya bu linki ver. KDV varsayılan %20.",
+      "kullanıcıya bu linki ver. " +
+      "Para birimi: 'dolar teklifi' / 'usd' geçerse currency=USD, 'euro' / 'avro' geçerse currency=EUR, " +
+      "değilse TRY (varsayılan). Tüm fiyatlar KDV hariçtir, KDV satırı çıktılarda gösterilmez.",
     {
       customer: customerSchema,
       items: z.array(itemSchema).min(1),
       title: titleSchema,
+      currency: currencySchema.optional(),
       note: z.string().optional(),
-      vatRate: z.number().min(0).max(100).optional(),
       monthly: z.number().nonnegative().optional(),
       date: z.coerce.date().optional(),
     },

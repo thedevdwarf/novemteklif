@@ -11,6 +11,7 @@ import type {
   Title,
   Totals,
   Customer,
+  Currency,
   ProposalStatus,
 } from "./types.js";
 
@@ -18,7 +19,8 @@ const ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 const newToken = customAlphabet(ALPHABET, 24);
 
 const DEFAULT_TITLE: Title = { main: "Novem POS", accent: "Restoran Çözümü" };
-const DEFAULT_VAT = 20;
+const DEFAULT_CURRENCY: Currency = "TRY";
+const VALID_CURRENCIES: ReadonlySet<Currency> = new Set(["TRY", "USD", "EUR"]);
 
 export class NotFoundError extends Error {
   constructor(idOrNo: string) {
@@ -30,6 +32,15 @@ export class ValidationError extends Error {}
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+function normalizeCurrency(c?: string | null): Currency {
+  if (!c) return DEFAULT_CURRENCY;
+  const upper = c.toUpperCase() as Currency;
+  if (!VALID_CURRENCIES.has(upper)) {
+    throw new ValidationError(`Desteklenmeyen para birimi: ${c}. Geçerli: TRY, USD, EUR`);
+  }
+  return upper;
 }
 
 function computeItems(items: ItemInput[]): Item[] {
@@ -45,11 +56,9 @@ function computeItems(items: ItemInput[]): Item[] {
   });
 }
 
-function computeTotals(items: Item[], vatRate: number, monthly?: number): Totals {
+function computeTotals(items: Item[], monthly?: number | null): Totals {
   const subtotal = round2(items.reduce((s, it) => s + it.total, 0));
-  const vat = round2((subtotal * vatRate) / 100);
-  const grandTotal = round2(subtotal + vat);
-  const t: Totals = { subtotal, vatRate, vat, grandTotal };
+  const t: Totals = { subtotal, grandTotal: subtotal };
   if (monthly !== undefined && monthly !== null) t.monthly = round2(monthly);
   return t;
 }
@@ -91,6 +100,7 @@ export interface ProposalView {
   revision: string;
   customer: Customer;
   title: Title;
+  currency: Currency;
   items: Item[];
   totals: Totals;
   note?: string;
@@ -113,6 +123,7 @@ export function toView(d: ProposalDoc): ProposalView {
     revision: d.revision,
     customer: d.customer,
     title: d.title,
+    currency: d.currency ?? DEFAULT_CURRENCY,
     items: d.items,
     totals: d.totals,
     status: d.status,
@@ -136,8 +147,8 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
   }
   const customer = normalizeCustomer(input.customer);
   const items = computeItems(input.items);
-  const vatRate = input.vatRate ?? DEFAULT_VAT;
-  const totals = computeTotals(items, vatRate, input.monthly);
+  const currency = normalizeCurrency(input.currency);
+  const totals = computeTotals(items, input.monthly);
   const date = input.date ?? new Date();
   const seq = await repo.nextSeq(date.getFullYear());
   const proposalNo = `${config.proposalPrefix}-${date.getFullYear()}-${String(seq).padStart(3, "0")}`;
@@ -154,6 +165,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
     revision: "1.00",
     customer,
     title,
+    currency,
     items,
     totals,
     status: "draft",
@@ -189,14 +201,14 @@ export async function updateProposal(idOrNo: string, patch: ProposalPatch): Prom
     ? normalizeCustomer({ ...cur.customer, ...patch.customer })
     : cur.customer;
   const items = patch.items ? computeItems(patch.items) : cur.items;
-  const vatRate = patch.vatRate ?? cur.totals.vatRate;
+  const currency = patch.currency ? normalizeCurrency(patch.currency) : (cur.currency ?? DEFAULT_CURRENCY);
   const monthly =
     patch.monthly === null
       ? undefined
       : patch.monthly !== undefined
         ? patch.monthly
         : cur.totals.monthly;
-  const totals = computeTotals(items, vatRate, monthly);
+  const totals = computeTotals(items, monthly);
   const title: Title = patch.title
     ? { main: patch.title.main ?? cur.title.main, accent: patch.title.accent ?? cur.title.accent }
     : cur.title;
@@ -208,6 +220,7 @@ export async function updateProposal(idOrNo: string, patch: ProposalPatch): Prom
   const updated = await repo.update(cur._id, {
     customer,
     items,
+    currency,
     totals,
     title,
     ...(patch.date ? { date: patch.date } : {}),
@@ -219,7 +232,6 @@ export async function updateProposal(idOrNo: string, patch: ProposalPatch): Prom
 
 export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Promise<ProposalView> {
   const cur = await loadOrThrow(idOrNo);
-  // En son revizyonu bul
   const all = await repo.findRevisions(cur.proposalNo);
   const latest = all[all.length - 1] ?? cur;
   const newRev = nextRevision(latest.revision);
@@ -228,14 +240,14 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
     ? normalizeCustomer({ ...cur.customer, ...patch.customer })
     : cur.customer;
   const items = patch?.items ? computeItems(patch.items) : cur.items;
-  const vatRate = patch?.vatRate ?? cur.totals.vatRate;
+  const currency = patch?.currency ? normalizeCurrency(patch.currency) : (cur.currency ?? DEFAULT_CURRENCY);
   const monthly =
     patch?.monthly === null
       ? undefined
       : patch?.monthly !== undefined
         ? patch.monthly
         : cur.totals.monthly;
-  const totals = computeTotals(items, vatRate, monthly);
+  const totals = computeTotals(items, monthly);
   const title: Title = patch?.title
     ? { main: patch.title.main ?? cur.title.main, accent: patch.title.accent ?? cur.title.accent }
     : cur.title;
@@ -248,6 +260,7 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
     revision: newRev,
     customer,
     title,
+    currency,
     items,
     totals,
     status: "draft",
@@ -277,14 +290,14 @@ export async function cloneProposalForCustomer(
   const src = await loadOrThrow(sourceIdOrNo);
   const customer = normalizeCustomer({ ...newCustomer });
   const items = patch?.items ? computeItems(patch.items) : src.items;
-  const vatRate = patch?.vatRate ?? src.totals.vatRate;
+  const currency = patch?.currency ? normalizeCurrency(patch.currency) : (src.currency ?? DEFAULT_CURRENCY);
   const monthly =
     patch?.monthly === null
       ? undefined
       : patch?.monthly !== undefined
         ? patch.monthly
         : src.totals.monthly;
-  const totals = computeTotals(items, vatRate, monthly);
+  const totals = computeTotals(items, monthly);
   const title: Title = patch?.title
     ? { main: patch.title.main ?? src.title.main, accent: patch.title.accent ?? src.title.accent }
     : src.title;
@@ -301,6 +314,7 @@ export async function cloneProposalForCustomer(
     revision: "1.00",
     customer,
     title,
+    currency,
     items,
     totals,
     status: "draft",

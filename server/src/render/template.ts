@@ -9,10 +9,16 @@ import type { ProposalView } from "../proposals/service.js";
 const here = fileURLToPath(new URL(".", import.meta.url));
 const templatesDir = resolve(here, "../../templates");
 
-const TRY_FORMATTER = new Intl.NumberFormat("tr-TR", {
+const NUM_FORMATTER = new Intl.NumberFormat("tr-TR", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+
+const CURRENCY_SUFFIX: Record<string, string> = {
+  TRY: "₺",
+  USD: "$",
+  EUR: "€",
+};
 
 function pad2(n: number): string {
   return n < 10 ? `0${n}` : String(n);
@@ -24,12 +30,13 @@ function formatDate(d: Date | string | undefined): string {
   return `${pad2(date.getDate())}.${pad2(date.getMonth() + 1)}.${date.getFullYear()}`;
 }
 
-function formatTRY(n: number | undefined): string {
+function formatMoney(n: number | undefined, currency?: string): string {
   if (n === undefined || n === null || Number.isNaN(n)) return "—";
-  return `${TRY_FORMATTER.format(n)} ₺`;
+  const suffix = CURRENCY_SUFFIX[currency ?? "TRY"] ?? "₺";
+  return `${NUM_FORMATTER.format(n)} ${suffix}`;
 }
 
-Handlebars.registerHelper("formatTRY", formatTRY);
+Handlebars.registerHelper("formatMoney", formatMoney);
 Handlebars.registerHelper("formatDate", formatDate);
 Handlebars.registerHelper("eq", (a: unknown, b: unknown) => a === b);
 Handlebars.registerHelper("paddingCount", (items: unknown[] | undefined, min: number) => {

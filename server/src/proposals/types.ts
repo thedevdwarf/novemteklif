@@ -19,10 +19,10 @@ export interface Item extends ItemInput {
   total: number;
 }
 
+export type Currency = "TRY" | "USD" | "EUR";
+
 export interface Totals {
   subtotal: number;
-  vatRate: number;
-  vat: number;
   grandTotal: number;
   monthly?: number;
 }
@@ -40,6 +40,7 @@ export interface ProposalDoc {
   revision: string;
   customer: Customer;
   title: Title;
+  currency: Currency;
   items: Item[];
   totals: Totals;
   note?: string;
@@ -64,9 +65,9 @@ export interface CounterDoc {
 export interface ProposalPatch {
   customer?: Partial<Customer>;
   title?: Partial<Title>;
+  currency?: Currency;
   items?: ItemInput[];
   note?: string | null;
-  vatRate?: number;
   monthly?: number | null;
   date?: Date;
 }
@@ -75,8 +76,8 @@ export interface CreateProposalInput {
   customer: Customer;
   items: ItemInput[];
   title?: Partial<Title>;
+  currency?: Currency;
   note?: string;
-  vatRate?: number;
   monthly?: number;
   date?: Date;
 }

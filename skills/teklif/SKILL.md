@@ -31,7 +31,7 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
 5. **Klonlama:** `clone_proposal_for_customer` kullandığında dönen yeni `proposalNo`'yu vurgula. "X firmasına yeni teklif **NVM-2026-XXX** numarasıyla oluşturuldu."
 6. **Revizyon:** `revise_proposal` her çağrıldığında revision artar. Yeni link de yeni revizyona ait. Eski link revoke EDİLMEZ — ayrı doc, ayrı token.
 7. **Tarih:** Kullanıcı tarih vermezse bugünün tarihini kullan (tool zaten default eder).
-8. **KDV:** Default %20. Kullanıcı "KDV hariç" / "KDV %0" vs derse `vatRate: 0` gönder.
+8. **Para birimi:** Default `TRY` (₺). Kullanıcı "dolar / USD" derse `currency: "USD"`, "euro / avro / EUR" derse `currency: "EUR"` gönder. Tüm fiyatlar KDV hariç — KDV satırı çıktıda görünmez, kullanıcıya da öyle anlat.
 9. **Asla** teklif numarası / revizyon / token üretmeye çalışma. Hepsi server tarafında.
 10. **Hata durumunda** `isError: true` döndüyse mesajı kullanıcıya doğal Türkçe ile aktar, başka tool deneme.
 
@@ -48,7 +48,7 @@ create_proposal({
 ```
 
 **Yanıt:**
-> Teklif oluşturuldu: **NVM-2026-001** (Rev 1.00) — KDV dahil **480,00 ₺**
+> Teklif oluşturuldu: **NVM-2026-001** (Rev 1.00) — Toplam **400,00 ₺** (KDV hariç)
 > Önizleme: [https://teklif.novem.com.tr/p/aB3xYz...](...)
 >
 > Bu link 7 gün geçerli, PDF ürettiğinde kapanır.
@@ -59,7 +59,16 @@ create_proposal({
 
 **Sen:** `update_proposal({ idOrNo: "NVM-2026-001", patch: { items: [{ name: "Termal Yazıcı", qty: 6, unitPrice: 100 }] } })`
 
-> Güncellendi, sayfada F5 yapın. Yeni toplam: **720,00 ₺**.
+> Güncellendi, sayfada F5 yapın. Yeni toplam: **600,00 ₺**.
+
+---
+
+**Kullanıcı:** "5000 dolarlık bir teklif yap, ABC Şirketi için, 10 adet lisans 500 dolar."
+
+**Sen:** `create_proposal({ customer: { tradeName: "ABC Şirketi", contactPerson: "..." }, items: [{ name: "Lisans", qty: 10, unitPrice: 500 }], currency: "USD" })`
+
+> Teklif oluşturuldu: **NVM-2026-002** — Toplam **5.000,00 $** (KDV hariç).
+> Önizleme: [...](...)
 
 ---
 
