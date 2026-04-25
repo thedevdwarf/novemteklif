@@ -51,6 +51,7 @@ export interface ProposalDoc {
   pdfPath?: string | null;
   parentId?: ObjectId | null;
   clonedFromId?: ObjectId | null;
+  customerId?: ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
   date: Date;
@@ -87,6 +88,7 @@ export interface CreateProposalInput {
 export interface SearchInput {
   query?: string;
   customerName?: string;
+  customerId?: string;
   dateFrom?: Date;
   dateTo?: Date;
   status?: ProposalStatus;

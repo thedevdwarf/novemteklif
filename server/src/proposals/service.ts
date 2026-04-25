@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { customAlphabet } from "nanoid";
 import { config } from "../config.js";
 import * as repo from "./repository.js";
+import * as customerService from "../customers/service.js";
 import type {
   CreateProposalInput,
   ItemInput,
@@ -154,6 +155,15 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
     throw new ValidationError("En az bir kalem gerekli");
   }
   const customer = normalizeCustomer(input.customer);
+  // Cari master kaydını bul/oluştur ve referansını al
+  const master = await customerService.findOrCreate({
+    tradeName: customer.tradeName,
+    contactPerson: customer.contactPerson,
+    greetingName: customer.greetingName,
+    address: customer.address,
+    taxOffice: customer.taxOffice,
+    taxNo: customer.taxNo,
+  });
   const items = computeItems(input.items);
   const currency = normalizeCurrency(input.currency);
   const preparer = normalizePreparer(input.preparer);
@@ -182,6 +192,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
     pdfPath: null,
     parentId: null,
     clonedFromId: null,
+    customerId: new ObjectId(master.id),
     createdAt: now,
     updatedAt: now,
     date,
@@ -281,6 +292,7 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
     pdfPath: null,
     parentId: cur._id,
     clonedFromId: cur.clonedFromId ?? null,
+    customerId: cur.customerId ?? null,
     createdAt: now,
     updatedAt: now,
     date: patch?.date ?? new Date(),
@@ -300,6 +312,15 @@ export async function cloneProposalForCustomer(
 ): Promise<ProposalView> {
   const src = await loadOrThrow(sourceIdOrNo);
   const customer = normalizeCustomer({ ...newCustomer });
+  // Yeni müşteri için cari master oluştur/bul
+  const master = await customerService.findOrCreate({
+    tradeName: customer.tradeName,
+    contactPerson: customer.contactPerson,
+    greetingName: customer.greetingName,
+    address: customer.address,
+    taxOffice: customer.taxOffice,
+    taxNo: customer.taxNo,
+  });
   const items = patch?.items ? computeItems(patch.items) : src.items;
   const currency = patch?.currency ? normalizeCurrency(patch.currency) : (src.currency ?? DEFAULT_CURRENCY);
   const preparer = patch?.preparer !== undefined ? normalizePreparer(patch.preparer) : (src.preparer ?? "Novem Yazılım");
@@ -337,6 +358,7 @@ export async function cloneProposalForCustomer(
     pdfPath: null,
     parentId: null,
     clonedFromId: src._id,
+    customerId: new ObjectId(master.id),
     createdAt: now,
     updatedAt: now,
     date,

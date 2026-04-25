@@ -82,6 +82,7 @@ export async function search(input: SearchInput): Promise<SearchResult[]> {
   }
 
   if (input.query) filter.$text = { $search: input.query };
+  if (input.customerId) filter.customerId = new ObjectId(input.customerId);
 
   const docs = await proposals()
     .find(filter)

@@ -26,6 +26,12 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
 | **"X kim?", "Aziz hakkında"** | `get_member` |
 | **"X'e şunu yaz / söyle / haber ver"** | `send_message_to_member` |
 | **"X'i ekipten sil"** | `forget_member` *(açık onay al)* |
+| **"yeni cari aç", "X firmasını kaydet"** | `register_customer` |
+| **"müşteriler", "carileri listele"** | `list_customers` |
+| **"X firması hakkında", "X'in iletişim bilgileri"** | `get_customer` |
+| **"X firmasının telefonunu güncelle", "vergi no ekle"** | `update_customer` |
+| **"X firmasının tekliflerini göster"** | `search_proposals({ customerName: "X" })` veya `search_proposals({ customerId })` |
+| **"X firmasını sil"** | `forget_customer` *(açık onay al)* |
 
 ## Davranış kuralları
 
@@ -49,6 +55,12 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
     - Tanımadığın bir Türkçe isim çıkarsa kullanıcıya sor: *"X'i ekibe kaydedeyim mi?"*
 
 13. **Ekip arası mesajlaşma:** Bir kullanıcı başka bir ekip üyesine mesaj göndermek isterse (*"Osman'a şunu yaz: ..."*, *"Aziz'e haber ver"*) `send_message_to_member` çağır. Mesaj metnine **gönderen bilgisini ekle** ki alıcı kim yazdığını bilsin: örn. `"[Aziz diyor ki:] merhaba"`.
+
+14. **Cari (müşteri) sistemi:**
+    - Her teklif bir cari'ye bağlanır. `create_proposal` otomatik olarak `tradeName` ile master kaydı bulur veya oluşturur — ekstra adım gerekmez.
+    - **Müşteri tekrar geldiğinde** kullanıcı *"Hatay Soslu için yeni teklif"* derse, agent doğrudan create_proposal çağırabilir; cari aynı tradeName ile zaten kayıtlı olduğu için bağlanır.
+    - Müşteri bilgisi (telefon, vergi no vs.) güncellemek istenirse `update_customer` kullan — bu **sadece master'ı** etkiler, eski tekliflerin snapshot'larına dokunmaz (PDF tarihi olarak donmuş bilgi olmalı).
+    - "X firmasının tüm teklifleri" → `search_proposals({ customerName: "X" })` veya önce `get_customer` ile id'yi al, sonra `search_proposals({ customerId })`.
     - Hedef üyenin `telegramId`'si yoksa tool hata döner. O durumda kullanıcıya:
       *"X'in Telegram ID'si kayıtlı değil. X bana bir kez yazıp '/myid' gibi bir şey demeli, ya da @userinfobot'a /start atıp ID'sini öğrenip 'beni X olarak kaydet, telegramId 12345' diyerek tamamlamalı."*
     - Mesaj başarıyla gittiyse: *"✓ Osman'a iletildi."* gibi kısa onay ver.

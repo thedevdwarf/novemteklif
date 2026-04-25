@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as service from "../proposals/service.js";
 import * as team from "../team/service.js";
+import * as customers from "../customers/service.js";
 import { renderPdf } from "../render/pdf.js";
 
 const customerSchema = z
@@ -121,10 +122,12 @@ export function registerTools(mcp: McpServer): void {
   mcp.tool(
     "search_proposals",
     "Teklifleri arar. 'Hatay'ın geçen ki teklifi', 'şu firmanın teklifleri' türü sorgular için kullan. " +
-      "customerName regex prefix arar; query text index üzerinden tüm metinde arar.",
+      "customerName regex prefix arar; query text index üzerinden tüm metinde arar. " +
+      "customerId verirsen o cariye yapılan tüm teklifleri getirir.",
     {
       query: z.string().optional(),
       customerName: z.string().optional(),
+      customerId: z.string().optional(),
       dateFrom: z.coerce.date().optional(),
       dateTo: z.coerce.date().optional(),
       status: z.enum(["draft", "sent", "accepted", "rejected"]).optional(),
@@ -250,6 +253,117 @@ export function registerTools(mcp: McpServer): void {
       try {
         const r = await service.setStatus(idOrNo, status);
         return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  // ────────── CARİ (MÜŞTERİLER) ──────────
+
+  mcp.tool(
+    "register_customer",
+    "Yeni bir cari (müşteri firma) kaydı açar veya mevcut kaydı zenginleştirir. " +
+      "tradeName aynıysa kaydedilmiş olanı bulur ve eksik alanları doldurur (üzerine yazmaz). " +
+      "Üzerine yazmak için update_customer kullan. " +
+      "create_proposal zaten otomatik cari oluşturduğu için bunu sadece müşteriyi önceden kaydetmek " +
+      "veya iletişim/vergi bilgisi eklemek için kullan.",
+    {
+      tradeName: z.string().min(1).describe("Ticari unvan, örn. 'Hatay Soslu Döner'"),
+      contactPerson: z.string().optional(),
+      greetingName: z.string().optional(),
+      phone: z.string().optional(),
+      email: z.string().optional(),
+      address: z.string().optional(),
+      taxOffice: z.string().optional().describe("Vergi dairesi"),
+      taxNo: z.string().optional().describe("Vergi numarası / TCKN"),
+      notes: z.string().optional(),
+    },
+    async (args) => {
+      try {
+        const r = await customers.registerCustomer(args);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "list_customers",
+    "Cari (müşteri) listesi. query verirsen tradeName içinde regex arar.",
+    {
+      query: z.string().optional(),
+      limit: z.number().int().min(1).max(200).optional(),
+    },
+    async ({ query, limit }) => {
+      try {
+        const r = await customers.listCustomers(query, limit);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "get_customer",
+    "Tek bir cari kaydını ID veya ticari unvanla getirir.",
+    { idOrTradeName: z.string().min(1) },
+    async ({ idOrTradeName }) => {
+      try {
+        const r = await customers.getCustomer(idOrTradeName);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "update_customer",
+    "Cari master kaydını günceller. ÖNEMLİ: bu yalnızca master kaydı etkiler — " +
+      "eski tekliflerdeki snapshot bilgileri DEĞİŞMEZ (PDF/sözleşme tarihi olarak donmuş kalır). " +
+      "Bundan sonra yapılan teklifler güncel master snapshot'ını alır. " +
+      "patch'te sadece değişen alanları gönder.",
+    {
+      idOrTradeName: z.string().min(1),
+      patch: z
+        .object({
+          tradeName: z.string().optional(),
+          contactPerson: z.string().optional(),
+          greetingName: z.string().optional(),
+          phone: z.string().optional(),
+          email: z.string().optional(),
+          address: z.string().optional(),
+          taxOffice: z.string().optional(),
+          taxNo: z.string().optional(),
+          notes: z.string().optional(),
+        })
+        .strict(),
+    },
+    async ({ idOrTradeName, patch }) => {
+      try {
+        const r = await customers.updateCustomer(idOrTradeName, patch);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "forget_customer",
+    "Cari kaydını siler. Bu carinin geçmiş teklifleri silinmez ama customerId referansı boşa düşer. " +
+      "Kullanıcıdan açık 'evet sil' onayı al.",
+    {
+      idOrTradeName: z.string().min(1),
+      confirm: z.literal(true),
+    },
+    async ({ idOrTradeName }) => {
+      try {
+        const deleted = await customers.forgetCustomer(idOrTradeName);
+        return ok({ deleted });
       } catch (e) {
         return err((e as Error).message);
       }
