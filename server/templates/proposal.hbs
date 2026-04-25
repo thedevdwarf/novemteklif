@@ -912,9 +912,11 @@
     </tfoot>
   </table>
 
+  {{#if note}}
   <div class="price-hint">
-    {{#if note}}{{note}}{{else}}<strong>Not:</strong> Fiyatlarımıza KDV dahil değildir. Teklif tek şube için hazırlanmıştır. Çoklu şube veya Merkezi Yönetim Sistemi talepleri için kademeli indirim uygulanabilir. Kurulum, eğitim ve uyarlama hizmetleri tek seferlik bedele dahildir.{{/if}}
+    {{note}}
   </div>
+  {{/if}}
 
   <div class="page-footer">
     <div class="left">
