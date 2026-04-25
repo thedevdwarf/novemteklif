@@ -18,7 +18,7 @@ const sample: ProposalDoc = {
     contactPerson: "Tayfun Dede",
     greetingName: "Tayfun Dede",
   },
-  title: { main: "Novem POS", accent: "Restoran Çözümü" },
+  title: { main: "Novem POS" },
   currency: "TRY",
   preparer: "Osman Tuzcu",
   items: [

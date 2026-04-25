@@ -38,8 +38,7 @@ const preparerSchema = z
 
 const titleSchema = z
   .object({
-    main: z.string().optional().describe('Kapak başlığı, örn. "Novem POS" veya "Mikrotik Hotspot Çözümü"'),
-    accent: z.string().optional().describe('Alt vurgu satırı, örn. "Restoran Çözümü"'),
+    main: z.string().optional().describe('Kapak başlığı, örn. "Novem POS" veya "Mikrotik Hotspot Çözümü". Default "Novem POS".'),
   })
   .strict()
   .optional();

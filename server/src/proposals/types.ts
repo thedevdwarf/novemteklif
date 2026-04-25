@@ -29,7 +29,6 @@ export interface Totals {
 
 export interface Title {
   main: string;
-  accent: string;
 }
 
 export type ProposalStatus = "draft" | "sent" | "accepted" | "rejected";

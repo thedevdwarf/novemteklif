@@ -18,7 +18,7 @@ import type {
 const ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const newToken = customAlphabet(ALPHABET, 24);
 
-const DEFAULT_TITLE: Title = { main: "Novem POS", accent: "Restoran Çözümü" };
+const DEFAULT_TITLE: Title = { main: "Novem POS" };
 const DEFAULT_CURRENCY: Currency = "TRY";
 const VALID_CURRENCIES: ReadonlySet<Currency> = new Set(["TRY", "USD", "EUR"]);
 
@@ -162,10 +162,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
   const seq = await repo.nextSeq(date.getFullYear());
   const proposalNo = `${config.proposalPrefix}-${date.getFullYear()}-${String(seq).padStart(3, "0")}`;
   const { token, expiresAt } = makeToken();
-  const title: Title = {
-    main: input.title?.main ?? DEFAULT_TITLE.main,
-    accent: input.title?.accent ?? DEFAULT_TITLE.accent,
-  };
+  const title: Title = { main: input.title?.main ?? DEFAULT_TITLE.main };
 
   const now = new Date();
   const doc: ProposalDoc = {
@@ -221,7 +218,7 @@ export async function updateProposal(idOrNo: string, patch: ProposalPatch): Prom
         : cur.totals.monthly;
   const totals = computeTotals(items, monthly);
   const title: Title = patch.title
-    ? { main: patch.title.main ?? cur.title.main, accent: patch.title.accent ?? cur.title.accent }
+    ? { main: patch.title.main ?? cur.title.main }
     : cur.title;
 
   const noteUpdate: Partial<ProposalDoc> = {};
@@ -262,7 +259,7 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
         : cur.totals.monthly;
   const totals = computeTotals(items, monthly);
   const title: Title = patch?.title
-    ? { main: patch.title.main ?? cur.title.main, accent: patch.title.accent ?? cur.title.accent }
+    ? { main: patch.title.main ?? cur.title.main }
     : cur.title;
 
   const { token, expiresAt } = makeToken();
@@ -314,7 +311,7 @@ export async function cloneProposalForCustomer(
         : src.totals.monthly;
   const totals = computeTotals(items, monthly);
   const title: Title = patch?.title
-    ? { main: patch.title.main ?? src.title.main, accent: patch.title.accent ?? src.title.accent }
+    ? { main: patch.title.main ?? src.title.main }
     : src.title;
 
   const date = patch?.date ?? new Date();
