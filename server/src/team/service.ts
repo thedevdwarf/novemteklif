@@ -1,4 +1,5 @@
 import * as repo from "./repository.js";
+import { config } from "../config.js";
 import type { TeamMemberDoc, TeamMemberInput, TeamMemberView } from "./types.js";
 
 export class ValidationError extends Error {}
@@ -67,4 +68,43 @@ export async function listMembers(): Promise<TeamMemberView[]> {
 
 export async function forgetMember(idOrName: string): Promise<boolean> {
   return repo.deleteByIdOrName(idOrName);
+}
+
+export interface SendResult {
+  ok: boolean;
+  to: { name: string; telegramId: string };
+  messageId?: number;
+}
+
+export async function sendMessageToMember(memberIdOrName: string, text: string): Promise<SendResult> {
+  const token = config.telegramBotToken;
+  if (!token) {
+    throw new ValidationError(
+      "Telegram bot token yapılandırılmamış. Sunucu .env'inde TELEGRAM_BOT_TOKEN set et.",
+    );
+  }
+  if (!text || !text.trim()) throw new ValidationError("Mesaj metni boş olamaz");
+  const member = await repo.findByIdOrName(memberIdOrName);
+  if (!member) throw new NotFoundError(memberIdOrName);
+  if (!member.telegramId) {
+    throw new ValidationError(
+      `${member.name} için Telegram ID kayıtlı değil. Önce register_member ile telegramId ekle ` +
+        `(kullanıcı kendi ID'sini @userinfobot'a /start yazarak öğrenebilir).`,
+    );
+  }
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: member.telegramId, text }),
+  });
+  const data = (await r.json()) as { ok: boolean; description?: string; result?: { message_id?: number } };
+  if (!data.ok) {
+    throw new Error(`Telegram API hatası: ${data.description ?? "bilinmiyor"}`);
+  }
+  return {
+    ok: true,
+    to: { name: member.name, telegramId: member.telegramId },
+    ...(data.result?.message_id !== undefined ? { messageId: data.result.message_id } : {}),
+  };
 }

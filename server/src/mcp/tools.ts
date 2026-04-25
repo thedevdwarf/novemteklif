@@ -311,6 +311,27 @@ export function registerTools(mcp: McpServer): void {
   );
 
   mcp.tool(
+    "send_message_to_member",
+    "Bir ekip üyesinin Telegram DM'ine doğrudan mesaj gönderir. Bot Telegram API üzerinden bu kişiye yazar. " +
+      "Kullanıcı 'Osman'a şunu söyle: ...' / 'Aziz'e haber ver: ...' tarzı bir şey derse bunu çağır. " +
+      "Hedef üyenin telegramId'si kayıtlı olmalı. Değilse hata döner — o zaman kullanıcıya: " +
+      "'X'in Telegram ID'si kayıtlı değil. X kendi botuna /start atıp @userinfobot'tan ID'sini alıp register_member çağırmalı.' de. " +
+      "Mesaj içeriğine [Aziz diyor ki: ...] gibi gönderen bilgisini sen ekle ki alıcı kim yazdığını bilsin.",
+    {
+      memberName: z.string().min(1).describe("Hedef üyenin adı (örn. 'Osman') veya MongoDB ID'si"),
+      message: z.string().min(1).describe("Gönderilecek tam mesaj metni. Gönderen bilgisini de ekle, örn. 'Aziz diyor ki: merhaba'"),
+    },
+    async ({ memberName, message }) => {
+      try {
+        const r = await team.sendMessageToMember(memberName, message);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
     "forget_member",
     "Bir ekip üyesini takım defterinden siler. Kullanıcıdan açık onay al ('evet sil').",
     {

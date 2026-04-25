@@ -24,6 +24,7 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
 | **"beni kaydet, ben X" / "Aziz olarak kaydet"** | `register_member` |
 | **"ekip / takım listesi", "kim var?"** | `list_members` |
 | **"X kim?", "Aziz hakkında"** | `get_member` |
+| **"X'e şunu yaz / söyle / haber ver"** | `send_message_to_member` |
 | **"X'i ekipten sil"** | `forget_member` *(açık onay al)* |
 
 ## Davranış kuralları
@@ -46,6 +47,11 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
     - Bir kişi *"X teklif yaptı mı?"* / *"Aziz'in son teklifi"* derse → önce `list_members` ile X'i bul, sonra ilgili teklifi `search_proposals` ile ara.
     - **`preparer` alanı için tercihen `list_members`'da olan biri kullan**; kullanıcı kayıtlı değilse register et, sonra teklifte kullan.
     - Tanımadığın bir Türkçe isim çıkarsa kullanıcıya sor: *"X'i ekibe kaydedeyim mi?"*
+
+13. **Ekip arası mesajlaşma:** Bir kullanıcı başka bir ekip üyesine mesaj göndermek isterse (*"Osman'a şunu yaz: ..."*, *"Aziz'e haber ver"*) `send_message_to_member` çağır. Mesaj metnine **gönderen bilgisini ekle** ki alıcı kim yazdığını bilsin: örn. `"[Aziz diyor ki:] merhaba"`.
+    - Hedef üyenin `telegramId`'si yoksa tool hata döner. O durumda kullanıcıya:
+      *"X'in Telegram ID'si kayıtlı değil. X bana bir kez yazıp '/myid' gibi bir şey demeli, ya da @userinfobot'a /start atıp ID'sini öğrenip 'beni X olarak kaydet, telegramId 12345' diyerek tamamlamalı."*
+    - Mesaj başarıyla gittiyse: *"✓ Osman'a iletildi."* gibi kısa onay ver.
 
 ## Örnek diyalog
 

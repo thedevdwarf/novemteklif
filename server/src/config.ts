@@ -36,6 +36,8 @@ export const config = {
   },
 
   proposalPrefix: str("PROPOSAL_PREFIX", "NVM"),
+
+  telegramBotToken: str("TELEGRAM_BOT_TOKEN", ""),
 } as const;
 
 export type Config = typeof config;
