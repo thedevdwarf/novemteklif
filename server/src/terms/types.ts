@@ -41,6 +41,7 @@ export const DEFAULT_BLOCKS: TermBlock[] = [
   {
     title: "Fiyatlandırma ve KDV",
     paragraphs: [
+      "Yazılım ürünlerimiz bulut tabanlı olarak sunulmakta olup, teklifteki yazılım kalemleri yıllık kiralama bedelidir.",
       "Fiyat tekliflerimize KDV dahil değildir.",
       "Döviz cinsinden verilen fiyatlar, fatura tarihinde geçerli olan Garanti Bankası döviz satış kuru üzerinden Türk Lirası'na çevrilerek faturalandırılır.",
     ],
