@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Novem POS - Bayi Fiyat Listesi 2026</title>
+<style>
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: #1A2332;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page:last-child {
+    page-break-after: auto;
+  }
+
+  /* ==================== COVER ==================== */
+  .cover {
+    background: #0A1628;
+    color: #FFFFFF;
+    padding: 22mm 20mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -120mm;
+    right: -120mm;
+    width: 280mm;
+    height: 280mm;
+    background: radial-gradient(circle, rgba(0, 255, 240, 0.18) 0%, rgba(115, 171, 255, 0.08) 40%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -80mm;
+    left: -80mm;
+    width: 200mm;
+    height: 200mm;
+    background: radial-gradient(circle, rgba(115, 171, 255, 0.12) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+
+  .cover-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .cover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cover-logo {
+    width: 48mm;
+  }
+
+  .cover-meta {
+    text-align: right;
+    font-size: 9pt;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .cover-meta .label {
+    font-size: 7.5pt;
+    opacity: 0.6;
+    margin-bottom: 1mm;
+  }
+
+  .cover-meta .value {
+    color: #FFFFFF;
+    font-weight: 600;
+    margin-bottom: 3mm;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 10pt;
+  }
+
+  .cover-title-block {
+    margin-top: 55mm;
+    flex-grow: 1;
+  }
+
+  .cover-eyebrow {
+    font-size: 9pt;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #00FFF0;
+    font-weight: 500;
+    margin-bottom: 6mm;
+  }
+
+  .cover-title {
+    font-size: 46pt;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    line-height: 1.05;
+    margin-bottom: 8mm;
+  }
+
+  .cover-title .accent {
+    color: #00FFF0;
+  }
+
+  .cover-lede {
+    font-size: 11pt;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.5px;
+    max-width: 130mm;
+    line-height: 1.7;
+    margin-bottom: 10mm;
+  }
+
+  .cover-badges {
+    display: flex;
+    gap: 4mm;
+  }
+
+  .cover-badge {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 2mm;
+    padding: 3mm 5mm;
+    font-size: 8.5pt;
+  }
+
+  .cover-badge .b-label {
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 7pt;
+    margin-bottom: 1.5mm;
+  }
+
+  .cover-badge .b-value {
+    color: #00FFF0;
+    font-weight: 700;
+    font-size: 11pt;
+  }
+
+  .cover-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 8.5pt;
+    color: rgba(255, 255, 255, 0.5);
+    padding-top: 8mm;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .cover-footer .company {
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 600;
+    font-size: 9pt;
+  }
+
+  /* ==================== CONTENT PAGES ==================== */
+  .content {
+    background: #FFFFFF;
+    padding: 18mm 20mm 18mm 20mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 5mm;
+    border-bottom: 1px solid #E5EAF0;
+    margin-bottom: 7mm;
+  }
+
+  .page-header-logo {
+    width: 28mm;
+  }
+
+  .page-header-info {
+    text-align: right;
+    font-size: 8pt;
+    color: #5A6878;
+  }
+
+  .page-header-info strong {
+    color: #1A2332;
+    display: block;
+    font-size: 9pt;
+    margin-bottom: 0.5mm;
+  }
+
+  .section-title {
+    font-size: 20pt;
+    font-weight: 700;
+    color: #0A1628;
+    margin-bottom: 2mm;
+    letter-spacing: -0.5px;
+  }
+
+  .section-subtitle {
+    font-size: 9.5pt;
+    color: #5A6878;
+    margin-bottom: 7mm;
+  }
+
+  /* ==================== PRICE TABLE ==================== */
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    margin-bottom: 6mm;
+  }
+
+  .price-table thead tr {
+    background: #0A1628;
+    color: #FFFFFF;
+  }
+
+  .price-table thead th {
+    padding: 3mm 3mm;
+    text-align: left;
+    font-weight: 600;
+    font-size: 8.5pt;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .price-table thead th.num {
+    text-align: right;
+  }
+
+  .price-table thead th.bayi {
+    background: #00D4CE;
+    color: #06251f;
+    text-align: right;
+  }
+
+  .price-table tbody td {
+    padding: 2.1mm 3mm;
+    border-bottom: 1px solid #E5EAF0;
+    vertical-align: middle;
+  }
+
+  .price-table tbody td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .price-table tbody td.bayi {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    font-weight: 700;
+    color: #0A7d75;
+    background: rgba(0, 212, 206, 0.07);
+  }
+
+  .price-table tbody td.enduser {
+    color: #5A6878;
+  }
+
+  .price-table .item-name {
+    font-weight: 600;
+    color: #1A2332;
+  }
+
+  .price-table .item-desc {
+    font-size: 7.3pt;
+    color: #8A95A5;
+    line-height: 1.35;
+  }
+
+  /* section band row inside table */
+  .price-table tr.band td {
+    background: #F2F5FA;
+    color: #0A1628;
+    font-weight: 700;
+    font-size: 8pt;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2.4mm 3mm;
+    border-bottom: 1px solid #DCE3EC;
+    border-top: 1px solid #DCE3EC;
+  }
+
+  .col-item   { width: 30%; }
+  .col-bayi   { width: 15%; }
+  .col-enduser{ width: 15%; }
+  .col-note   { width: 40%; }
+
+  .note-cell {
+    font-size: 7.3pt;
+    color: #5A6878;
+    line-height: 1.35;
+  }
+
+  .pill {
+    display: inline-block;
+    font-size: 6.8pt;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #4A6FE3;
+    background: #EDF1FC;
+    border-radius: 1mm;
+    padding: 0.6mm 1.6mm;
+  }
+
+  .pill.year { color: #0A7d75; background: rgba(0, 212, 206, 0.12); }
+
+  /* legend / hint */
+  .price-hint {
+    background: #F7F9FC;
+    border-left: 3px solid #00D4CE;
+    padding: 3mm 4mm;
+    font-size: 8.5pt;
+    color: #5A6878;
+    margin-bottom: 6mm;
+    line-height: 1.55;
+  }
+
+  .price-hint strong { color: #0A1628; }
+
+  /* ==================== TERMS / NOTES ==================== */
+  .term-block {
+    padding: 1.8mm 0;
+    border-bottom: 1px solid #E5EAF0;
+  }
+
+  .term-block:last-child { border-bottom: none; }
+
+  .term-title {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: #0A1628;
+    margin-bottom: 0.8mm;
+    display: flex;
+    align-items: center;
+    gap: 2.5mm;
+  }
+
+  .term-title::before {
+    content: '';
+    width: 3.5mm;
+    height: 0.8mm;
+    background: linear-gradient(90deg, #73ABFF 0%, #00FFF0 100%);
+    border-radius: 1mm;
+    display: inline-block;
+  }
+
+  .term-body {
+    font-size: 8pt;
+    color: #3A4758;
+    line-height: 1.45;
+    padding-left: 6mm;
+  }
+
+  .term-body p + p { margin-top: 1.6mm; }
+
+  /* ==================== FOOTER ==================== */
+  .page-footer {
+    position: absolute;
+    left: 20mm;
+    right: 20mm;
+    bottom: 10mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 7.5pt;
+    color: #8A95A5;
+    padding-top: 4mm;
+    border-top: 1px solid #E5EAF0;
+    white-space: nowrap;
+  }
+
+  .page-footer .left { display: flex; gap: 6mm; }
+  .page-footer strong { color: #1A2332; }
+</style>
+</head>
+<body>
+
+<!-- ========================================================= -->
+<!-- PAGE 1: COVER                                              -->
+<!-- ========================================================= -->
+<div class="page cover">
+  <div class="cover-inner">
+    <div class="cover-header">
+      <img src="logo.svg" class="cover-logo" alt="Novem">
+      <div class="cover-meta">
+        <div class="label">Belge</div>
+        <div class="value">Bayi Fiyat Listesi</div>
+        <div class="label">Geçerlilik</div>
+        <div class="value">2026</div>
+        <div class="label">Revizyon</div>
+        <div class="value">1.01</div>
+      </div>
+    </div>
+
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">2026 · Bayi Özel</div>
+      <div class="cover-title">
+        Bayi <span class="accent">Fiyat<br>Listesi</span>
+      </div>
+
+      <div class="cover-lede">
+        Novem POS paketleri, modülleri ve entegrasyon hizmetlerine ait güncel
+        bayi ve son kullanıcı fiyatları. Tüm yazılım kalemleri bulut tabanlı
+        olup yıllık kiralama bedelidir.
+      </div>
+
+      <div class="cover-badges">
+        <div class="cover-badge">
+          <div class="b-label">Para Birimi</div>
+          <div class="b-value">USD $</div>
+        </div>
+        <div class="cover-badge">
+          <div class="b-label">Lisans Modeli</div>
+          <div class="b-value">Yıllık</div>
+        </div>
+        <div class="cover-badge">
+          <div class="b-label">Bayi Desteği</div>
+          <div class="b-value">1 Yıl</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div>
+        <div class="company">Novem Yazılım ve Danışmanlık Tic. Ltd. Şti.</div>
+        <div>Atatürk Mh. Komsan Üstü Yolu Cd. Residence Quality No:4/28 Küçükçekmece / İstanbul</div>
+      </div>
+      <div>
+        Halkalı V.D. · 632 155 9162
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- PAGE 2: PAKETLER + MODÜLLER                                -->
+<!-- ========================================================= -->
+<div class="page content">
+  <div class="page-header">
+    <img src="logo-dark.svg" class="page-header-logo" alt="Novem">
+    <div class="page-header-info">
+      <strong>Bayi Fiyat Listesi 2026</strong>
+      Paketler ve Modüller
+    </div>
+  </div>
+
+  <div class="section-title">Fiyat Listesi</div>
+  <div class="section-subtitle" style="margin-bottom:5mm;">Novem POS paketleri ve yazılım modülleri — bayi ve son kullanıcı fiyatları</div>
+
+  <table class="price-table">
+    <thead>
+      <tr>
+        <th class="col-item">Ürün / Hizmet</th>
+        <th class="col-bayi bayi">Bayi</th>
+        <th class="col-enduser num">Son Kul.</th>
+        <th class="col-note">Paket İçeriği / Açıklama</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="band"><td colspan="4">Paketler</td></tr>
+
+      <tr>
+        <td class="item-name">Novem POS Market</td>
+        <td class="bayi">400,00 $</td>
+        <td class="num enduser">800,00 $</td>
+        <td class="note-cell">Stok + Cari + Fatura + Kasa + Banka + Raporlar + Terazi + Hızlı Satış</td>
+      </tr>
+      <tr>
+        <td class="item-name">Novem POS Fast Food</td>
+        <td class="bayi">400,00 $</td>
+        <td class="num enduser">800,00 $</td>
+        <td class="note-cell">Stok + Cari + Fatura + Kasa + Banka + Depo + Raporlar + Terazi + Hızlı Satış + Happy Hour / Happy Day + Paket Servis</td>
+      </tr>
+      <tr>
+        <td class="item-name">Novem POS Cafe / Restorant</td>
+        <td class="bayi">600,00 $</td>
+        <td class="num enduser">1.200,00 $</td>
+        <td class="note-cell">Stok + Cari + Fatura + Kasa + Banka + Personel + Hızlı Satış + Randevu Takip + Raporlar + Terazi + Paket Servis</td>
+      </tr>
+      <tr>
+        <td class="item-name">Novem POS Paket Servis</td>
+        <td class="bayi">175,00 $</td>
+        <td class="num enduser">350,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">Novem POS Self Servis Kiosk</td>
+        <td class="bayi">250,00 $</td>
+        <td class="num enduser">500,00 $</td>
+        <td class="note-cell">Her kiosk cihazı için ayrıca ücretlendirilir.</td>
+      </tr>
+      <tr>
+        <td class="item-name">Back Office Standart</td>
+        <td class="bayi">750,00 $</td>
+        <td class="num enduser">1.500,00 $</td>
+        <td class="note-cell">Her şube için +150 $ (bayi için +75 $).</td>
+      </tr>
+
+      <tr class="band"><td colspan="4">Modüller ve Diğer Programlar</td></tr>
+
+      <tr>
+        <td class="item-name">Novem POS Boss</td>
+        <td class="bayi">50,00 $</td>
+        <td class="num enduser">100,00 $</td>
+        <td class="note-cell">Kullanıcı sınırlaması yoktur, şube başı fiyatlandırılır.</td>
+      </tr>
+      <tr>
+        <td class="item-name">Online QR Kod — Sıra Takip</td>
+        <td class="bayi">50,00 $</td>
+        <td class="num enduser">100,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">QR Menü</td>
+        <td class="bayi">100,00 $</td>
+        <td class="num enduser">200,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">Back Office Şube Yönetimi</td>
+        <td class="bayi">75,00 $</td>
+        <td class="num enduser">150,00 $</td>
+        <td class="note-cell">Her şube için ayrıca fiyatlandırılır.</td>
+      </tr>
+      <tr>
+        <td class="item-name">Mutfak Ekranı</td>
+        <td class="bayi">75,00 $</td>
+        <td class="num enduser">150,00 $</td>
+        <td class="note-cell">Her mutfak için ayrıca fiyatlandırılır.</td>
+      </tr>
+      <tr>
+        <td class="item-name">Sıra Takip Ekranı</td>
+        <td class="bayi">75,00 $</td>
+        <td class="num enduser">150,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">Garson Terminali</td>
+        <td class="bayi">75,00 $</td>
+        <td class="num enduser">150,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">Ek Sipariş Terminali</td>
+        <td class="bayi">75,00 $</td>
+        <td class="num enduser">150,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">Vale App</td>
+        <td class="bayi">150,00 $</td>
+        <td class="num enduser">300,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">Kurye Sistemi</td>
+        <td class="bayi">400,00 $</td>
+        <td class="num enduser">800,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">Web Sipariş Portalı</td>
+        <td class="bayi">750,00 $</td>
+        <td class="num enduser">1.500,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+      <tr>
+        <td class="item-name">Sayım App</td>
+        <td class="bayi">50,00 $</td>
+        <td class="num enduser">100,00 $</td>
+        <td class="note-cell"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <div class="left">
+      <span><strong>Novem Yazılım</strong></span>
+      <span>Bayi Fiyat Listesi 2026</span>
+    </div>
+    <div>Sayfa 2 / 3</div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- PAGE 3: ENTEGRASYONLAR + DESTEK + KOŞULLAR                 -->
+<!-- ========================================================= -->
+<div class="page content">
+  <div class="page-header">
+    <img src="logo-dark.svg" class="page-header-logo" alt="Novem">
+    <div class="page-header-info">
+      <strong>Bayi Fiyat Listesi 2026</strong>
+      Entegrasyonlar ve Destek
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:16pt;">Entegrasyonlar ve Destek</div>
+  <div class="section-subtitle" style="margin-bottom:5mm;">Yemek uygulamaları, e-fatura, ERP ve kurulum hizmetleri</div>
+
+  <table class="price-table">
+    <thead>
+      <tr>
+        <th class="col-item">Ürün / Hizmet</th>
+        <th class="col-bayi bayi">Bayi</th>
+        <th class="col-enduser num">Son Kul.</th>
+        <th class="col-note">Açıklama</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="band"><td colspan="4">Yemek Uygulamaları Entegrasyonu</td></tr>
+
+      <tr>
+        <td class="item-name">Yemeksepeti</td>
+        <td class="bayi">50,00 $</td>
+        <td class="num enduser">100,00 $</td>
+        <td class="note-cell" rowspan="4" style="vertical-align:middle;">Yemek uygulamaları için alınacak ücretler yıllık olarak tahsil edilmektedir.</td>
+      </tr>
+      <tr>
+        <td class="item-name">Getir Yemek</td>
+        <td class="bayi">50,00 $</td>
+        <td class="num enduser">100,00 $</td>
+      </tr>
+      <tr>
+        <td class="item-name">Trendyol Yemek</td>
+        <td class="bayi">50,00 $</td>
+        <td class="num enduser">100,00 $</td>
+      </tr>
+      <tr>
+        <td class="item-name">Migros Yemek</td>
+        <td class="bayi">50,00 $</td>
+        <td class="num enduser">100,00 $</td>
+      </tr>
+
+      <tr class="band"><td colspan="4">Entegrasyonlar</td></tr>
+
+      <tr>
+        <td class="item-name">E-Fatura / E-Arşiv</td>
+        <td class="bayi">100,00 $</td>
+        <td class="num enduser">200,00 $</td>
+        <td class="note-cell">Ticari entegratör üzerinden sağlanır.</td>
+      </tr>
+      <tr>
+        <td class="item-name">ERP Entegrasyonu</td>
+        <td class="bayi">1.000,00 $</td>
+        <td class="num enduser">2.000,00 $</td>
+        <td class="note-cell">ERP çözüm ortağından alınacak servis bedelleri dahil değildir.</td>
+      </tr>
+      <tr>
+        <td class="item-name">Yazar Kasa Entegrasyonu</td>
+        <td class="bayi">75,00 $</td>
+        <td class="num enduser">150,00 $</td>
+        <td class="note-cell">Pavo, Ingenico ve Inpos cihazları desteklenmektedir.</td>
+      </tr>
+
+      <tr class="band"><td colspan="4">Yazılım Destek</td></tr>
+
+      <tr>
+        <td class="item-name">Yerinde Kurulum Servis</td>
+        <td class="bayi">75,00 $</td>
+        <td class="num enduser">150,00 $</td>
+        <td class="note-cell">Hizmet 2 saat ile sınırlıdır.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <div class="left">
+      <span><strong>Novem Yazılım ve Danışmanlık Tic. Ltd. Şti.</strong></span>
+    </div>
+    <div>Sayfa 3 / 3</div>
+  </div>
+</div>
+
+</body>
+</html>
