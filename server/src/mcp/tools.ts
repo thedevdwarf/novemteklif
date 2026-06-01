@@ -153,7 +153,9 @@ export function registerTools(mcp: McpServer): void {
     "update_proposal",
     "Mevcut teklifin içeriğini günceller (aynı revizyon üstünde). " +
       "Önizleme linki AYNI KALIR — kullanıcı tarayıcıda yenileyebilir. " +
-      "Toplamlar otomatik yeniden hesaplanır. Sadece gönderdiğin alanlar değişir.",
+      "Toplamlar otomatik yeniden hesaplanır. Sadece gönderdiğin alanlar değişir. " +
+      "NOT: Son değişiklikten 2 saatten fazla geçmişse in-place güncelleme REDDEDİLİR " +
+      "(hata döner). Bu durumda eski sürümü korumak için 'revise_proposal' çağır.",
     {
       idOrNo: z.string().min(3),
       patch: patchSchema,

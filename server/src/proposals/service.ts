@@ -25,6 +25,11 @@ const DEFAULT_TITLE: Title = { main: "Novem POS" };
 const DEFAULT_CURRENCY: Currency = "TRY";
 const VALID_CURRENCIES: ReadonlySet<Currency> = new Set(["TRY", "USD", "EUR"]);
 
+// Son değişiklikten sonra in-place update'e izin verilen pencere.
+// Bu süre geçtikten sonra update overwrite ETMEZ; hata fırlatıp revise_proposal'a
+// yönlendirir, böylece önceki sürüm her zaman korunur.
+const UPDATE_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 saat
+
 export class NotFoundError extends Error {
   constructor(idOrNo: string) {
     super(`Teklif bulunamadı: ${idOrNo}`);
@@ -32,6 +37,17 @@ export class NotFoundError extends Error {
 }
 
 export class ValidationError extends Error {}
+
+// Update penceresi kapandığında fırlatılır — overwrite engellenir, revizyon zorlanır.
+export class StaleUpdateError extends Error {
+  constructor(idOrNo: string, hoursAgo: number) {
+    super(
+      `Bu teklif (${idOrNo}) en son ${hoursAgo} saat önce değiştirilmiş. ` +
+        `2 saatlik düzenleme penceresi kapandığı için in-place güncelleme yapılmaz. ` +
+        `Önceki sürümü korumak adına bunun yerine 'revise_proposal' kullan (yeni revizyon açar).`,
+    );
+  }
+}
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
@@ -225,6 +241,15 @@ export async function getProposal(idOrNo: string): Promise<ProposalView> {
 
 export async function updateProposal(idOrNo: string, patch: ProposalPatch): Promise<ProposalView> {
   const cur = await loadOrThrow(idOrNo);
+
+  // Son değişiklikten 2 saatten fazla geçtiyse in-place overwrite'a izin verme;
+  // hata fırlat ve revise_proposal'a yönlendir — önceki sürüm korunsun.
+  const sinceLastChange = Date.now() - cur.updatedAt.getTime();
+  if (sinceLastChange > UPDATE_WINDOW_MS) {
+    const hoursAgo = Math.floor(sinceLastChange / (60 * 60 * 1000));
+    throw new StaleUpdateError(idOrNo, hoursAgo);
+  }
+
   const customer = patch.customer
     ? normalizeCustomer({ ...cur.customer, ...patch.customer })
     : cur.customer;
