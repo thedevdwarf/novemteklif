@@ -57,6 +57,7 @@ export interface ProposalDoc {
   customerId?: ObjectId | null;
   termsTemplateId?: ObjectId | null;
   terms?: TermBlock[];
+  templateId?: string;
   createdAt: Date;
   updatedAt: Date;
   date: Date;
@@ -77,6 +78,7 @@ export interface ProposalPatch {
   note?: string | null;
   monthly?: number | null;
   date?: Date;
+  templateId?: string;
 }
 
 export interface CreateProposalInput {
@@ -88,6 +90,7 @@ export interface CreateProposalInput {
   note?: string;
   monthly?: number;
   date?: Date;
+  templateId?: string;
 }
 
 export interface SearchInput {

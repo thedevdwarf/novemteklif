@@ -4,6 +4,7 @@ import { config } from "../config.js";
 import * as repo from "./repository.js";
 import * as customerService from "../customers/service.js";
 import * as termsService from "../terms/service.js";
+import { DEFAULT_TEMPLATE_ID, isValidTemplateId, listTemplates } from "../render/templates.js";
 import type { TermBlock } from "../terms/types.js";
 import type {
   CreateProposalInput,
@@ -65,6 +66,16 @@ function normalizeCurrency(c?: string | null): Currency {
 function normalizePreparer(p?: string | null): string {
   const t = (p ?? "").trim();
   if (!t) throw new ValidationError("Teklifi hazırlayan kişinin adı zorunlu");
+  return t;
+}
+
+function normalizeTemplateId(id?: string | null): string {
+  if (!id) return DEFAULT_TEMPLATE_ID;
+  const t = id.trim();
+  if (!isValidTemplateId(t)) {
+    const valid = listTemplates().map((m) => m.id).join(", ");
+    throw new ValidationError(`Geçersiz teklif teması: ${id}. Geçerli değerler: ${valid}`);
+  }
   return t;
 }
 
@@ -131,6 +142,7 @@ export interface ProposalView {
   totals: Totals;
   terms?: TermBlock[];
   termsTemplateId?: string;
+  templateId: string;
   note?: string;
   status: ProposalStatus;
   date: Date;
@@ -155,6 +167,7 @@ export function toView(d: ProposalDoc): ProposalView {
     preparer: d.preparer ?? "Novem Yazılım",
     items: d.items,
     totals: d.totals,
+    templateId: d.templateId ?? DEFAULT_TEMPLATE_ID,
     status: d.status,
     date: d.date,
     createdAt: d.createdAt,
@@ -190,6 +203,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
   const currency = normalizeCurrency(input.currency);
   const preparer = normalizePreparer(input.preparer);
   const totals = computeTotals(items, input.monthly);
+  const templateId = normalizeTemplateId(input.templateId);
   const date = input.date ?? new Date();
   const seq = await repo.nextSeq(date.getFullYear());
   const proposalNo = `${config.proposalPrefix}-${date.getFullYear()}-${String(seq).padStart(3, "0")}`;
@@ -207,6 +221,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Propos
     preparer,
     items,
     totals,
+    templateId,
     status: "draft",
     previewToken: token,
     previewExpiresAt: expiresAt,
@@ -266,6 +281,8 @@ export async function updateProposal(idOrNo: string, patch: ProposalPatch): Prom
   const title: Title = patch.title
     ? { main: patch.title.main ?? cur.title.main }
     : cur.title;
+  const templateId =
+    patch.templateId !== undefined ? normalizeTemplateId(patch.templateId) : (cur.templateId ?? DEFAULT_TEMPLATE_ID);
 
   const noteUpdate: Partial<ProposalDoc> = {};
   if (patch.note === null) noteUpdate.note = undefined;
@@ -278,6 +295,7 @@ export async function updateProposal(idOrNo: string, patch: ProposalPatch): Prom
     preparer,
     totals,
     title,
+    templateId,
     ...(patch.date ? { date: patch.date } : {}),
     ...noteUpdate,
   });
@@ -307,6 +325,8 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
   const title: Title = patch?.title
     ? { main: patch.title.main ?? cur.title.main }
     : cur.title;
+  const templateId =
+    patch?.templateId !== undefined ? normalizeTemplateId(patch.templateId) : (cur.templateId ?? DEFAULT_TEMPLATE_ID);
 
   const { token, expiresAt } = makeToken();
   const now = new Date();
@@ -320,6 +340,7 @@ export async function reviseProposal(idOrNo: string, patch?: ProposalPatch): Pro
     preparer,
     items,
     totals,
+    templateId,
     status: "draft",
     previewToken: token,
     previewExpiresAt: expiresAt,
@@ -371,6 +392,8 @@ export async function cloneProposalForCustomer(
   const title: Title = patch?.title
     ? { main: patch.title.main ?? src.title.main }
     : src.title;
+  const templateId =
+    patch?.templateId !== undefined ? normalizeTemplateId(patch.templateId) : (src.templateId ?? DEFAULT_TEMPLATE_ID);
 
   const date = patch?.date ?? new Date();
   const seq = await repo.nextSeq(date.getFullYear());
@@ -388,6 +411,7 @@ export async function cloneProposalForCustomer(
     preparer,
     items,
     totals,
+    templateId,
     status: "draft",
     previewToken: token,
     previewExpiresAt: expiresAt,
@@ -458,6 +482,19 @@ export async function resetProposalTermsToTemplate(idOrNo: string, templateIdOrN
     terms: tpl.blocks.map((b) => ({ title: b.title, paragraphs: [...b.paragraphs] })),
     termsTemplateId: new ObjectId(tpl.id),
   });
+  if (!updated) throw new NotFoundError(idOrNo);
+  return toView(updated);
+}
+
+/**
+ * Bir teklifin HTML temasını (templateId) değiştirir. Sadece görsel düzeni etkiler;
+ * içerik/toplamlar değişmez. update_proposal'ın 2 saatlik penceresine TABİ DEĞİLDİR —
+ * tema seçimi kozmetik olduğu için her zaman serbesttir. Önizleme linki aynı kalır.
+ */
+export async function setProposalTemplate(idOrNo: string, templateId: string): Promise<ProposalView> {
+  const cur = await loadOrThrow(idOrNo);
+  const normalized = normalizeTemplateId(templateId);
+  const updated = await repo.update(cur._id, { templateId: normalized });
   if (!updated) throw new NotFoundError(idOrNo);
   return toView(updated);
 }

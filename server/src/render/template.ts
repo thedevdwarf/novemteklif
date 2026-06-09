@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import Handlebars from "handlebars";
 import { config } from "../config.js";
 import { loadAssets } from "./assets.js";
+import { resolveTemplate } from "./templates.js";
 import type { ProposalView } from "../proposals/service.js";
 
 const here = fileURLToPath(new URL(".", import.meta.url));
@@ -53,17 +54,20 @@ Handlebars.registerHelper("greetingNameOrContact", (customer: { greetingName?: s
   return customer?.greetingName || customer?.contactPerson || "";
 });
 
-let cachedTemplate: HandlebarsTemplateDelegate | null = null;
+const templateCache = new Map<string, HandlebarsTemplateDelegate>();
 
-function getTemplate(): HandlebarsTemplateDelegate {
-  if (cachedTemplate) return cachedTemplate;
-  const src = readFileSync(resolve(templatesDir, "proposal.hbs"), "utf-8");
-  cachedTemplate = Handlebars.compile(src, { noEscape: false });
-  return cachedTemplate;
+function getTemplate(templateId?: string): HandlebarsTemplateDelegate {
+  const meta = resolveTemplate(templateId);
+  const cached = templateCache.get(meta.id);
+  if (cached) return cached;
+  const src = readFileSync(resolve(templatesDir, meta.file), "utf-8");
+  const compiled = Handlebars.compile(src, { noEscape: false });
+  templateCache.set(meta.id, compiled);
+  return compiled;
 }
 
 export function renderProposalHtml(p: ProposalView): string {
-  const tpl = getTemplate();
+  const tpl = getTemplate(p.templateId);
   return tpl({
     ...p,
     assets: loadAssets(),

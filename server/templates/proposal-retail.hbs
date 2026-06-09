@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>{{company.name}} - Fiyat Teklifi {{proposalNo}}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: #1E2329;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page:last-child {
+    page-break-after: auto;
+  }
+
+  /* ==================== COVER ==================== */
+  .cover {
+    background: #0C3B2E;
+    color: #FFFFFF;
+    padding: 22mm 20mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -120mm;
+    right: -120mm;
+    width: 280mm;
+    height: 280mm;
+    background: radial-gradient(circle, rgba(244, 183, 64, 0.22) 0%, rgba(31, 169, 113, 0.10) 42%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -80mm;
+    left: -80mm;
+    width: 200mm;
+    height: 200mm;
+    background: radial-gradient(circle, rgba(31, 169, 113, 0.16) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+
+  .cover-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .cover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cover-logo {
+    width: 48mm;
+  }
+
+  .cover-meta {
+    text-align: right;
+    font-size: 9pt;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .cover-meta .label {
+    font-size: 7.5pt;
+    opacity: 0.6;
+    margin-bottom: 1mm;
+  }
+
+  .cover-meta .value {
+    color: #FFFFFF;
+    font-weight: 600;
+    margin-bottom: 3mm;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 10pt;
+  }
+
+  .cover-title-block {
+    margin-top: 60mm;
+    flex-grow: 1;
+  }
+
+  .cover-eyebrow {
+    font-size: 9pt;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #F4B740;
+    font-weight: 500;
+    margin-bottom: 6mm;
+  }
+
+  .cover-title {
+    font-size: 48pt;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    line-height: 1.05;
+    margin-bottom: 10mm;
+  }
+
+  .cover-title .accent {
+    color: #F4B740;
+  }
+
+  .cover-for {
+    font-size: 10pt;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 3mm;
+  }
+
+  .cover-customer {
+    font-size: 20pt;
+    font-weight: 600;
+    color: #FFFFFF;
+    padding-bottom: 4mm;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 8mm;
+    display: inline-block;
+    min-width: 90mm;
+  }
+
+  .cover-greeting {
+    margin-top: 8mm;
+    font-size: 10pt;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.7;
+    max-width: 130mm;
+  }
+
+  .cover-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 8.5pt;
+    color: rgba(255, 255, 255, 0.5);
+    padding-top: 8mm;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .cover-footer .company {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    font-size: 9pt;
+  }
+
+  /* ==================== CONTENT PAGES ==================== */
+  .content {
+    background: #FFFFFF;
+    padding: 18mm 20mm 18mm 20mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 6mm;
+    border-bottom: 1px solid #E4EBE6;
+    margin-bottom: 10mm;
+  }
+
+  .page-header-logo {
+    width: 28mm;
+  }
+
+  .page-header-info {
+    text-align: right;
+    font-size: 8pt;
+    color: #5C6B62;
+  }
+
+  .page-header-info strong {
+    color: #1E2329;
+    display: block;
+    font-size: 9pt;
+    margin-bottom: 0.5mm;
+  }
+
+  .section-title {
+    font-size: 20pt;
+    font-weight: 700;
+    color: #0C3B2E;
+    margin-bottom: 2mm;
+    letter-spacing: -0.5px;
+  }
+
+  .section-subtitle {
+    font-size: 9.5pt;
+    color: #5C6B62;
+    margin-bottom: 6mm;
+  }
+
+  /* ==================== PRICE TABLE ==================== */
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    margin-bottom: 8mm;
+  }
+
+  .price-table thead tr {
+    background: #0C3B2E;
+    color: #FFFFFF;
+  }
+
+  .price-table thead th {
+    padding: 3.5mm 3mm;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .price-table thead th.num {
+    text-align: right;
+  }
+
+  .price-table tbody td {
+    padding: 4mm 3mm;
+    border-bottom: 1px solid #E4EBE6;
+    vertical-align: top;
+    min-height: 8mm;
+  }
+
+  .price-table tbody td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .price-table tbody tr.empty td {
+    color: #C2CDC6;
+    font-style: italic;
+    height: 10mm;
+  }
+
+  .price-table .col-item {
+    width: 50%;
+  }
+
+  .price-table .col-qty {
+    width: 12%;
+  }
+
+  .price-table .col-unit {
+    width: 18%;
+  }
+
+  .price-table .col-total {
+    width: 20%;
+  }
+
+  .price-table tfoot td {
+    padding: 3mm 3mm;
+    font-weight: 500;
+    border-bottom: 1px solid #E4EBE6;
+  }
+
+  .price-table tfoot .grand-total td {
+    background: #F2F8F4;
+    color: #0C3B2E;
+    font-size: 12pt;
+    font-weight: 700;
+    padding: 4.5mm 3mm;
+    border: none;
+    border-top: 2px solid #0C3B2E;
+  }
+
+  .price-table tfoot .monthly td {
+    color: #5C6B62;
+    font-size: 9pt;
+    padding-top: 4mm;
+    border: none;
+    border-top: 1px dashed #E4EBE6;
+  }
+
+  .price-hint {
+    background: #F2F8F4;
+    border-left: 3px solid #1FA971;
+    padding: 3mm 4mm;
+    font-size: 8.5pt;
+    color: #5C6B62;
+    margin-bottom: 6mm;
+    line-height: 1.55;
+  }
+
+  .price-hint strong {
+    color: #0C3B2E;
+  }
+
+  /* ==================== TERMS PAGE ==================== */
+  .terms-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .term-block {
+    padding: 1.8mm 0;
+    border-bottom: 1px solid #E4EBE6;
+  }
+
+  .term-block:last-child {
+    border-bottom: none;
+  }
+
+  .term-title {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: #0C3B2E;
+    margin-bottom: 0.6mm;
+    display: flex;
+    align-items: center;
+    gap: 2.5mm;
+  }
+
+  .term-title::before {
+    content: '';
+    width: 3.5mm;
+    height: 0.8mm;
+    background: linear-gradient(90deg, #1FA971 0%, #F4B740 100%);
+    border-radius: 1mm;
+    display: inline-block;
+  }
+
+  .term-body {
+    font-size: 7.8pt;
+    color: #3C4940;
+    line-height: 1.4;
+    padding-left: 6mm;
+  }
+
+  .term-body p + p {
+    margin-top: 2mm;
+  }
+
+  /* ==================== TANITIM SAYFASI ==================== */
+  .section-eyebrow {
+    font-size: 8.5pt;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #1FA971;
+    font-weight: 600;
+    margin-bottom: 4mm;
+  }
+
+  .hero-title {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #0C3B2E;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+    margin-bottom: 5mm;
+    max-width: 150mm;
+  }
+
+  .hero-title .accent {
+    color: #1FA971;
+  }
+
+  .hero-intro {
+    font-size: 10pt;
+    color: #3C4940;
+    line-height: 1.7;
+    margin-bottom: 12mm;
+    max-width: 155mm;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7mm 6mm;
+  }
+
+  .feature-card {
+    padding: 0;
+  }
+
+  .feature-icon {
+    width: 13mm;
+    height: 13mm;
+    border-radius: 3mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4mm;
+  }
+
+  .feature-icon svg {
+    width: 6.5mm;
+    height: 6.5mm;
+  }
+
+  .feature-title {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: #0C3B2E;
+    margin-bottom: 2mm;
+    line-height: 1.3;
+  }
+
+  .feature-desc {
+    font-size: 8.5pt;
+    color: #5C6B62;
+    line-height: 1.55;
+  }
+
+  /* ==================== MODÜLLER SAYFASI ==================== */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5mm;
+    margin-bottom: 6mm;
+  }
+
+  .module-card {
+    border: 1px solid #E4EBE6;
+    border-radius: 2mm;
+    padding: 2.5mm 3mm 2.5mm 3mm;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2.5mm;
+  }
+
+  .module-icon {
+    width: 7mm;
+    height: 7mm;
+    min-width: 7mm;
+    border-radius: 1.8mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .module-icon svg {
+    width: 3.8mm;
+    height: 3.8mm;
+  }
+
+  .module-text {
+    flex: 1;
+  }
+
+  .module-title {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #0C3B2E;
+    margin-bottom: 0.5mm;
+    line-height: 1.2;
+  }
+
+  .module-desc {
+    font-size: 7pt;
+    color: #5C6B62;
+    line-height: 1.4;
+  }
+
+  /* ==================== HIGHLIGHT BANDI ==================== */
+  .retail-band {
+    margin-top: auto;
+    background: linear-gradient(135deg, #0C3B2E 0%, #14533D 100%);
+    border-radius: 3mm;
+    padding: 6mm 8mm;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .retail-band::after {
+    content: '';
+    position: absolute;
+    top: -40mm;
+    right: -30mm;
+    width: 90mm;
+    height: 90mm;
+    background: radial-gradient(circle, rgba(244, 183, 64, 0.22) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .retail-band-title {
+    position: relative;
+    z-index: 1;
+    font-size: 13pt;
+    font-weight: 700;
+    margin-bottom: 2mm;
+  }
+
+  .retail-band-title .accent {
+    color: #F4B740;
+  }
+
+  .retail-band-text {
+    position: relative;
+    z-index: 1;
+    font-size: 8.5pt;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    max-width: 150mm;
+  }
+
+  .section-divider {
+    border-top: 1px solid #E4EBE6;
+    margin: 4mm 0 5mm 0;
+  }
+
+  /* ==================== FOOTER ==================== */
+  .page-footer {
+    position: absolute;
+    left: 20mm;
+    right: 20mm;
+    bottom: 10mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 7.5pt;
+    color: #889389;
+    padding-top: 4mm;
+    border-top: 1px solid #E4EBE6;
+    white-space: nowrap;
+  }
+
+  .page-footer .left {
+    display: flex;
+    gap: 6mm;
+  }
+
+  .page-footer strong {
+    color: #1E2329;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================================================= -->
+<!-- PAGE 1: COVER                                              -->
+<!-- ========================================================= -->
+<div class="page cover">
+  <div class="cover-inner">
+    <div class="cover-header">
+      <img src="{{{assets.logoWhite}}}" class="cover-logo" alt="Novem">
+      <div class="cover-meta">
+        <div class="label">Teklif No</div>
+        <div class="value">{{proposalNo}}</div>
+        <div class="label">Tarih</div>
+        <div class="value">{{formatDate date}}</div>
+        <div class="label">Revizyon</div>
+        <div class="value">{{revision}}</div>
+      </div>
+    </div>
+
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Perakende Çözüm Teklifi</div>
+      <div class="cover-title">
+        {{title.main}}
+      </div>
+
+      <div class="cover-for">Hazırlanan</div>
+      <div class="cover-customer">{{customer.tradeName}}{{#if customer.contactPerson}} — {{customer.contactPerson}}{{/if}}</div>
+
+      <div class="cover-greeting">
+        Sayın {{greetingNameOrContact customer}},<br><br>
+        Firmamızdan teklif almak sureti ile gösterdiğiniz ilgiye teşekkür ederiz.
+        Mağazanız için hazırladığımız {{title.main}} perakende çözümüne ait detayları ilerleyen sayfalarda bulabilirsiniz.
+        Her türlü soru ve önerileriniz için değerli dönüşlerinizi bekleriz.<br><br>
+        Saygılarımızla.<br>
+        <strong style="color:#FFFFFF;">{{preparer}}</strong>
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div>
+        <div class="company">{{company.name}}</div>
+        <div>{{company.address}}</div>
+      </div>
+      <div>
+        {{company.tax}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- PAGE 2: PERAKENDE TANITIM                                  -->
+<!-- ========================================================= -->
+<div class="page content">
+  <div class="page-header">
+    <img src="{{{assets.logoDark}}}" class="page-header-logo" alt="Novem">
+    <div class="page-header-info">
+      <strong>{{customer.tradeName}}{{#if customer.contactPerson}} — {{customer.contactPerson}}{{/if}}</strong>
+      Teklif No: {{proposalNo}} · {{formatDate date}}
+    </div>
+  </div>
+
+  <div class="section-eyebrow">Ürün Tanıtımı</div>
+  <div class="hero-title">Perakendede satıştan stoğa <span class="accent">tüm operasyon</span> tek ekranda.</div>
+  <div class="hero-intro">
+    Market, şarküteri, butik ve zincir mağazalar için tasarlanan bulut tabanlı perakende çözümümüzle kasada hız, rafta kontrol, depoda şeffaflık sizinle. Barkodlu satıştan stok hareketlerine, kampanya ve indirim kurgularından müşteri sadakatine kadar tüm süreçleri tek platformda yönetin; ürün ve şube bazında satışları anlık takip edip kararlarınızı veriye dayandırın.
+  </div>
+
+  <div class="features-grid">
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#1FA971">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14"/><path d="M7 5v14"/><path d="M11 5v14"/><path d="M15 5v14"/><path d="M19 5v14"/><path d="M21 5v14"/></svg>
+      </div>
+      <div class="feature-title">Barkodlu Hızlı Satış</div>
+      <div class="feature-desc">El terminali ve barkod okuyucu entegrasyonuyla kasada saniyeler içinde satış; sıra beklemeyi en aza indirin.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#14533D">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </div>
+      <div class="feature-title">Stok ve Raf Yönetimi</div>
+      <div class="feature-desc">Ürün bazında giriş-çıkış takibi, minimum stok uyarıları ve anlık maliyet analiziyle raf ve depoyu kontrol altında tutun.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#F4B740">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1" fill="#FFFFFF" stroke="none"/></svg>
+      </div>
+      <div class="feature-title">Kampanya ve İndirim Kurgusu</div>
+      <div class="feature-desc">Çoklu al-öde, kuponlu indirim ve dönemsel kampanyaları kasaya otomatik yansıtarak satışları artırın.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#2EB7A0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      </div>
+      <div class="feature-title">Çoklu Ödeme Seçenekleri</div>
+      <div class="feature-desc">Nakit, kredi kartı, yemek kartları ve QR dahil tüm ödeme yöntemlerini tek ekranda yönetin.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#C98A1A">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+      </div>
+      <div class="feature-title">Müşteri Sadakat Programı</div>
+      <div class="feature-desc">Puan, sadakat kartı ve kişiye özel kampanyalarla müşterilerinizi tekrar mağazaya getirin.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:#0C3B2E">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+      <div class="feature-title">Anlık Raporlama</div>
+      <div class="feature-desc">Ciro, kâr marjı, çok satan ürün ve şube performansını gerçek zamanlı panolarla takip edin.</div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span><strong>Novem Yazılım</strong></span>
+    </div>
+    <div></div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- PAGE 3: PERAKENDE MODÜLLERİ                                -->
+<!-- ========================================================= -->
+<div class="page content">
+  <div class="page-header">
+    <img src="{{{assets.logoDark}}}" class="page-header-logo" alt="Novem">
+    <div class="page-header-info">
+      <strong>{{customer.tradeName}}{{#if customer.contactPerson}} — {{customer.contactPerson}}{{/if}}</strong>
+      Teklif No: {{proposalNo}} · {{formatDate date}}
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:16pt;">Perakende Modülleri</div>
+  <div class="section-subtitle" style="margin-bottom:4mm;">İhtiyaçlarınıza göre seçebileceğiniz, birbirine entegre çalışan modüler yapı</div>
+
+  <div class="modules-grid">
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#0C3B2E">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Kasa</div>
+        <div class="module-desc">Barkodlu hızlı ödeme, çoklu kasa ve entegrasyonlarla satışın kalbi.</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#1FA971">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14"/><path d="M7 5v14"/><path d="M11 5v14"/><path d="M15 5v14"/><path d="M19 5v14"/><path d="M21 5v14"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Barkod</div>
+        <div class="module-desc">Etiket basımı, çoklu barkod ve el terminali ile saha sayımı.</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#2EB7A0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Stok</div>
+        <div class="module-desc">Anlık stok, minimum seviye uyarısı ve depo–raf hareketleri.</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#F4B740">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1" fill="#FFFFFF" stroke="none"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Kampanya</div>
+        <div class="module-desc">İndirim, kupon ve al-öde kurgularını kasaya otomatik uygular.</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#C98A1A">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Sadakat</div>
+        <div class="module-desc">Puan, sadakat kartı ve kişiye özel kampanya yönetimi.</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#14533D">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 13v.01"/><path d="M9 17v.01"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Şube</div>
+        <div class="module-desc">Çoklu mağazayı tek merkezden yöneten zincir altyapısı.</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#00B4D8">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Online</div>
+        <div class="module-desc">E-ticaret ve pazaryeri siparişlerini stoğa entegre eder.</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#8B5FE8">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Patron</div>
+        <div class="module-desc">Tüm satış ve stok verilerini tek mobil panoda yöneticiye sunar.</div>
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-icon" style="background:#FF6B6B">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17H7A5 5 0 017 7h2"/><path d="M15 7h2a5 5 0 010 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      </div>
+      <div class="module-text">
+        <div class="module-title">Novem Entegrasyon</div>
+        <div class="module-desc">Terazi, e-fatura ve muhasebe sistemleriyle kesintisiz akış.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="retail-band">
+    <div class="retail-band-title">Tek platform, <span class="accent">uçtan uca perakende</span></div>
+    <div class="retail-band-text">
+      Kasadan depoya, kampanyadan müşteri sadakatine kadar tüm modüller birbiriyle entegre çalışır.
+      Bulut tabanlı altyapı sayesinde verilerinize her yerden güvenle erişir, internet kesintisinde bile kesintisiz satış yaparsınız.
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span><strong>Novem Yazılım</strong></span>
+    </div>
+    <div></div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- PAGE 4: FİYAT TEKLİFİ                                      -->
+<!-- ========================================================= -->
+<div class="page content">
+  <div class="page-header">
+    <img src="{{{assets.logoDark}}}" class="page-header-logo" alt="Novem">
+    <div class="page-header-info">
+      <strong>{{customer.tradeName}}{{#if customer.contactPerson}} — {{customer.contactPerson}}{{/if}}</strong>
+      Teklif No: {{proposalNo}} · {{formatDate date}}
+    </div>
+  </div>
+
+  <div class="section-title">Fiyat Teklifi</div>
+  <div class="section-subtitle">{{title.main}}</div>
+
+  <table class="price-table">
+    <thead>
+      <tr>
+        <th class="col-item">Ürün / Hizmet</th>
+        <th class="col-qty num">Adet</th>
+        <th class="col-unit num">Birim Fiyat</th>
+        <th class="col-total num">Tutar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each items}}
+      <tr>
+        <td>{{name}}</td>
+        <td class="num">{{qty}}</td>
+        <td class="num">{{formatMoney unitPrice ../currency}}</td>
+        <td class="num">{{formatMoney total ../currency}}</td>
+      </tr>
+      {{/each}}
+      {{#times (paddingCount items 8)}}
+      <tr class="empty"><td>—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+      {{/times}}
+    </tbody>
+    <tfoot>
+      <tr class="grand-total">
+        <td colspan="3" style="text-align:right;">Toplam</td>
+        <td class="num">{{formatMoney totals.grandTotal currency}}</td>
+      </tr>
+      {{#if totals.monthly}}
+      <tr class="monthly">
+        <td colspan="3" style="text-align:right;">Aylık Bedel (Destek / Abonelik)</td>
+        <td class="num">{{formatMoney totals.monthly currency}}</td>
+      </tr>
+      {{/if}}
+    </tfoot>
+  </table>
+
+  {{#if note}}
+  <div class="price-hint">
+    {{note}}
+  </div>
+  {{/if}}
+
+  <div class="page-footer">
+    <div class="left">
+      <span><strong>Novem Yazılım</strong></span>
+    </div>
+    <div></div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- PAGE 5: TEKLİF KOŞULLARI                                   -->
+<!-- ========================================================= -->
+<div class="page content">
+  <div class="page-header">
+    <img src="{{{assets.logoDark}}}" class="page-header-logo" alt="Novem">
+    <div class="page-header-info">
+      <strong>{{customer.tradeName}}{{#if customer.contactPerson}} — {{customer.contactPerson}}{{/if}}</strong>
+      Teklif No: {{proposalNo}} · {{formatDate date}}
+    </div>
+  </div>
+
+  <div class="section-title">Teklif Koşulları</div>
+  <div class="section-subtitle">Lütfen teklifi kabul etmeden önce aşağıdaki şartları inceleyiniz</div>
+
+  <div class="terms-grid">
+
+    {{#each terms}}
+    <div class="term-block">
+      <div class="term-title">{{title}}</div>
+      <div class="term-body">
+        {{#each paragraphs}}
+        <p>{{this}}</p>
+        {{/each}}
+      </div>
+    </div>
+    {{/each}}
+
+  </div>
+
+  <div class="page-footer">
+    <div class="left">
+      <span><strong>{{company.name}}</strong></span>
+    </div>
+    <div></div>
+  </div>
+</div>
+
+</body>
+</html>

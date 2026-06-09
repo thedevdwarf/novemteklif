@@ -4,6 +4,7 @@ import * as service from "../proposals/service.js";
 import * as team from "../team/service.js";
 import * as customers from "../customers/service.js";
 import * as terms from "../terms/service.js";
+import { listTemplates } from "../render/templates.js";
 import { renderPdf } from "../render/pdf.js";
 
 const termBlockSchema = z.object({
@@ -51,6 +52,14 @@ const titleSchema = z
   .strict()
   .optional();
 
+const templateIdSchema = z
+  .string()
+  .min(1)
+  .describe(
+    'Teklifin HTML teması (görsel düzen). Geçerli değerleri list_proposal_templates ile gör. ' +
+      'Belirtilmezse "default" (Standart tema) kullanılır.',
+  );
+
 const patchSchema = z
   .object({
     customer: customerSchema.partial().optional(),
@@ -69,6 +78,7 @@ const patchSchema = z
       .optional()
       .describe("Aylık bedel (destek/abonelik). null gönderirsen siler."),
     date: z.coerce.date().optional(),
+    templateId: templateIdSchema.optional(),
   })
   .strict();
 
@@ -90,7 +100,10 @@ export function registerTools(mcp: McpServer): void {
       "Teklif numarası ve revizyon (1.00) otomatik atanır. Geçici bir önizleme bağlantısı (previewUrl) döner; " +
       "kullanıcıya bu linki ver. " +
       "Para birimi: 'dolar teklifi' / 'usd' geçerse currency=USD, 'euro' / 'avro' geçerse currency=EUR, " +
-      "değilse TRY (varsayılan). Tüm fiyatlar KDV hariçtir, KDV satırı çıktılarda gösterilmez.",
+      "değilse TRY (varsayılan). Tüm fiyatlar KDV hariçtir, KDV satırı çıktılarda gösterilmez. " +
+      "TEMA: Kullanıcı bir tema/şablon belirtirse (örn. 'perakende teması', 'market teması') ilgili templateId'yi geçir; " +
+      "geçerli id'leri bilmiyorsan önce list_proposal_templates çağır (örn. 'Perakende' → 'retail'). " +
+      "Belirtmezse templateId'yi boş bırak (varsayılan 'default' restoran/POS teması).",
     {
       customer: customerSchema,
       preparer: preparerSchema,
@@ -100,6 +113,7 @@ export function registerTools(mcp: McpServer): void {
       note: z.string().optional(),
       monthly: z.number().nonnegative().optional(),
       date: z.coerce.date().optional(),
+      templateId: templateIdSchema.optional(),
     },
     async (args) => {
       try {
@@ -260,6 +274,42 @@ export function registerTools(mcp: McpServer): void {
     async ({ idOrNo, status }) => {
       try {
         const r = await service.setStatus(idOrNo, status);
+        return ok(r);
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  // ────────── HTML TEMA (TEMPLATE) ──────────
+
+  mcp.tool(
+    "list_proposal_templates",
+    "Kullanılabilir teklif HTML temalarını (görsel düzen) listeler. " +
+      "create_proposal / set_proposal_template için geçerli templateId değerlerini buradan al.",
+    {},
+    async () => {
+      try {
+        return ok(listTemplates());
+      } catch (e) {
+        return err((e as Error).message);
+      }
+    },
+  );
+
+  mcp.tool(
+    "set_proposal_template",
+    "Mevcut bir teklifin HTML temasını (templateId) değiştirir. Sadece görsel düzeni etkiler; " +
+      "içerik, kalemler ve toplamlar değişmez. update_proposal'ın 2 saatlik penceresine TABİ DEĞİLDİR — " +
+      "tema her zaman değiştirilebilir. Önizleme linki aynı kalır. " +
+      "Geçerli templateId değerleri için list_proposal_templates çağır.",
+    {
+      idOrNo: z.string().min(3),
+      templateId: templateIdSchema,
+    },
+    async ({ idOrNo, templateId }) => {
+      try {
+        const r = await service.setProposalTemplate(idOrNo, templateId);
         return ok(r);
       } catch (e) {
         return err((e as Error).message);
