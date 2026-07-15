@@ -12,6 +12,7 @@ server/node_modules/
 server/.env
 server/.env.local
 server/sample-output.html
+server/out/
 
 # WSL Playwright cache (eğer repo içine düşerse)
 .cache/

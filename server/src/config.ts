@@ -1,4 +1,10 @@
 import "dotenv/config";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// server/ kökü — CWD'den bağımsız, proje-içi varsayılan yollar için.
+const here = fileURLToPath(new URL(".", import.meta.url));
+const serverRoot = resolve(here, "..");
 
 function int(name: string, def: number): number {
   const raw = process.env[name];
@@ -27,7 +33,11 @@ export const config = {
   mongoUrl: str("MONGO_URL", "mongodb://127.0.0.1:27017"),
   mongoDb: str("MONGO_DB", "teklify"),
 
-  outDir: str("OUT_DIR", "/home/Teklifler"),
+  // Varsayılan proje-içi server/out — normal kullanıcı altında her zaman
+  // yazılabilir (önceki varsayılan /home/Teklifler, o kullanıcı adına özel
+  // bir home dizini olmayan WSL kurulumlarında EACCES/ENOENT veriyordu).
+  // OUT_DIR env değişkeniyle hâlâ override edilebilir.
+  outDir: str("OUT_DIR", resolve(serverRoot, "out")),
 
   publicBaseUrl: str("PUBLIC_BASE_URL", "http://127.0.0.1:7879").replace(/\/$/, ""),
   previewTtlDays: int("PREVIEW_TTL_DAYS", 7),
