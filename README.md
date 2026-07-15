@@ -22,6 +22,7 @@
 - **Internal :7878** sadece WSL içinden erişilebilir. MCP server (`/mcp`) ve admin endpoint'leri (`/admin/proposals/...`) burada.
 - **Public :7879** sadece `GET /p/:token` endpoint'ini servis eder. Cloudflared tunnel sadece bu porta bağlanır.
 - **Önizleme link'i** geçici alfanumerik token'lıdır (`/p/aB3xYz...`). PDF üretildiğinde otomatik **revoke** edilir → `410 Gone`.
+- **`/mcp` koruması** — Bearer token + IP başına dakikalık rate limit. Aşağıdaki "MCP endpoint güvenliği" bölümüne bak.
 
 ## Dizin
 
@@ -92,8 +93,11 @@ cloudflared tunnel run teklify
 ```
 
 ### 6) openclaw'a MCP server'ı tanıt
+`.env`'e `MCP_AUTH_TOKEN` yazdıysan (bkz. "MCP endpoint güvenliği"), openclaw tarafında da
+aynı token'ı `Authorization: Bearer <token>` header'ı olarak geçmen gerekir — client config
+formatı openclaw sürümüne göre değişebilir, kendi dokümantasyonundan `headers` alanını doğrula:
 ```bash
-openclaw mcp set teklif '{"transport":"streamable-http","url":"http://127.0.0.1:7878/mcp"}'
+openclaw mcp set teklif '{"transport":"streamable-http","url":"http://127.0.0.1:7878/mcp","headers":{"Authorization":"Bearer <MCP_AUTH_TOKEN degeri>"}}'
 openclaw mcp list   # teklif: 10 tools görünmeli
 ```
 
@@ -127,6 +131,22 @@ bash deploy/start.sh
 `create_proposal`, `get_proposal`, `search_proposals`, `update_proposal`, `revise_proposal`, `clone_proposal_for_customer`, `generate_pdf`, `regenerate_preview_token`, `set_status`, `delete_proposal`.
 
 Detaylı parametreler için `server/src/mcp/tools.ts` veya `openclaw mcp show teklif`.
+
+## MCP endpoint güvenliği
+
+`/mcp` (ve `delete_proposal`, `forget_customer`, `forget_member`, `send_message_to_member` gibi
+yıkıcı tool'ları) artık iki katmanla korunuyor (`server/src/mcp/auth.ts`, `server/src/mcp/rateLimit.ts`):
+
+- **Bearer token** — İstek `Authorization: Bearer <MCP_AUTH_TOKEN>` ya da `X-API-Key: <MCP_AUTH_TOKEN>`
+  header'ından geçerli token'ı taşımalı, yoksa/yanlışsa `401` döner.
+  `.env`'de `MCP_AUTH_TOKEN` **tanımlı değilse fail-closed** davranılır: hiçbir istek
+  yetkilendirilmez (yalnızca "sadece localhost'tan erişilir" varsayımına güvenilmez).
+- **Rate limiting** — IP başına dakikada `MCP_RATE_LIMIT_PER_MINUTE` (varsayılan 60) istek;
+  aşılırsa `429` döner. Limit, auth kontrolünden **önce** uygulanır ki token deneme trafiği de
+  sınırlansın.
+
+Kurulum: `.env`'de rastgele bir `MCP_AUTH_TOKEN` üret (`openssl rand -hex 32` gibi) ve MCP
+client'ını (openclaw config'i, bkz. Adım 6) aynı token'ı header'da gönderecek şekilde ayarla.
 
 ## Veri modeli
 

@@ -18,6 +18,12 @@ export const config = {
   portPublic: int("PORT_PUBLIC", 7879),
   bindAddr: str("BIND_ADDR", "127.0.0.1"),
 
+  // /mcp endpoint koruması: Bearer token (bkz. server/src/mcp/auth.ts).
+  // Boş bırakılırsa fail-closed davranılır — /mcp'ye hiçbir istek yetkilendirilmez.
+  mcpAuthToken: str("MCP_AUTH_TOKEN", ""),
+  // /mcp için IP başına dakikadaki istek limiti (bkz. server/src/mcp/rateLimit.ts).
+  mcpRateLimitPerMinute: int("MCP_RATE_LIMIT_PER_MINUTE", 60),
+
   mongoUrl: str("MONGO_URL", "mongodb://127.0.0.1:27017"),
   mongoDb: str("MONGO_DB", "teklify"),
 
