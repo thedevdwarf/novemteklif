@@ -3,6 +3,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import * as service from "../proposals/service.js";
 import { renderProposalHtml } from "../render/template.js";
+import { renderPdfBuffer } from "../render/pdf.js";
 import { mountMcp } from "../mcp/server.js";
 
 export async function createInternalApp(): Promise<Express> {
@@ -30,7 +31,9 @@ export async function createInternalApp(): Promise<Express> {
     }
   });
 
-  // Admin PDF — diskten stream
+  // Admin PDF — diskten stream; dosya diskte kayıpsa (ör. WSL/container
+  // restart) generate_pdf onayı zaten DB'de kayıtlı olduğundan gate'i tekrar
+  // sormadan buffer'dan anında yeniden üretip stream ediyoruz.
   app.get("/admin/proposals/:idOrNo/pdf", async (req: Request, res: Response) => {
     const idOrNo = String(req.params.idOrNo ?? "");
     if (!idOrNo) return void res.status(400).type("text/plain").send("idOrNo gerekli");
@@ -43,17 +46,18 @@ export async function createInternalApp(): Promise<Express> {
           .type("text/plain")
           .send("PDF henüz üretilmemiş. Önce generate_pdf çağırın.");
       }
+      const fileName = `${doc.proposalNo}_v${doc.revision}.pdf`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
       try {
         await stat(doc.pdfPath);
+        createReadStream(doc.pdfPath).pipe(res);
       } catch {
-        return void res.status(404).type("text/plain").send("PDF dosyası diskte bulunamadı.");
+        console.warn(`[admin] pdf dosyası diskte yok, buffer'dan yeniden üretiliyor: ${doc.pdfPath}`);
+        const view = service.toView(doc);
+        const buf = await renderPdfBuffer(view);
+        res.send(buf);
       }
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${doc.proposalNo}_v${doc.revision}.pdf"`,
-      );
-      createReadStream(doc.pdfPath).pipe(res);
     } catch (err) {
       console.error("[admin] pdf error", err);
       res.status(500).type("text/plain").send("Sunucu hatası");
