@@ -685,10 +685,12 @@ export function registerTools(mcp: McpServer): void {
 }
 
 /**
- * /home/<user>/Teklifler/foo.pdf → \\wsl$\<distro>\home\<user>\Teklifler\foo.pdf
- * (kullanıcı manuel açabilsin diye Windows'a uyumlu yol da döneriz; distro adı bilinmediği için
- * generic bir prefix kullanıyoruz — kullanıcı bilgisayar başında bunu manuel düzeltebilir.)
+ * /home/<user>/Teklifler/foo.pdf → \\wsl$\Ubuntu\home\<user>\Teklifler\foo.pdf
+ * (kullanıcı manuel açabilsin diye Windows'a uyumlu yol da döneriz.) Distro adı
+ * WSL_DISTRO_NAME ortam değişkeninden okunur (WSL2 bunu otomatik set eder);
+ * değişken yoksa (örn. WSL dışında çalıştırılırsa) eski '<distro>' placeholder'ına düşer.
  */
 function toWindowsPath(unixPath: string): string {
-  return `\\\\wsl$\\<distro>${unixPath.replace(/\//g, "\\")}`;
+  const distro = process.env.WSL_DISTRO_NAME || "<distro>";
+  return `\\\\wsl$\\${distro}${unixPath.replace(/\//g, "\\")}`;
 }
