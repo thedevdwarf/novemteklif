@@ -39,7 +39,6 @@ function formatMoney(n: number | undefined, currency?: string): string {
 
 Handlebars.registerHelper("formatMoney", formatMoney);
 Handlebars.registerHelper("formatDate", formatDate);
-Handlebars.registerHelper("eq", (a: unknown, b: unknown) => a === b);
 Handlebars.registerHelper("paddingCount", (items: unknown[] | undefined, min: number) => {
   const n = Array.isArray(items) ? items.length : 0;
   return Math.max(0, min - n);
