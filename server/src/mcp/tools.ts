@@ -223,7 +223,7 @@ export function registerTools(mcp: McpServer): void {
 
   mcp.tool(
     "generate_pdf",
-    "Teklifin PDF'ini üretir ve diskte /home/Teklifler altına kaydeder. " +
+    "Teklifin PDF'ini üretir ve yapılandırılmış çıktı dizinine (OUT_DIR, varsayılan proje-içi server/out) kaydeder. " +
       "ÖNEMLİ: Bu çağrıdan sonra önizleme bağlantısı (previewUrl) OTOMATİK olarak kapatılır. " +
       "Kullanıcıdan onay almadan çağırma. Dönen filePath WSL içi yoldur.",
     { idOrNo: z.string().min(3) },

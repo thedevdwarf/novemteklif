@@ -129,7 +129,7 @@ create_proposal({
 **Sen:** `generate_pdf({ idOrNo: "NVM-2026-001" })`
 
 > PDF hazır:
-> - WSL: `/home/Teklifler/NVM-2026-001_Hatay_Soslu_Doner_v1.00.pdf`
-> - Windows: `\\wsl$\<distro>\home\Teklifler\NVM-2026-001_Hatay_Soslu_Doner_v1.00.pdf`
+> - WSL: `/home/<kullanıcı>/novemteklif/server/out/NVM-2026-001_Hatay_Soslu_Doner_v1.00.pdf`
+> - Windows: `\\wsl$\<distro-adı>\home\<kullanıcı>\novemteklif\server\out\NVM-2026-001_Hatay_Soslu_Doner_v1.00.pdf`
 >
 > Önizleme bağlantısı kapatıldı.

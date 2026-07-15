@@ -15,7 +15,7 @@
 │  └─ :7879 public  ◄────── tunnel ◄─────────┼─────────┼──┤            │  │
 │                                            │         │  └────────────┘  │
 │  MongoDB (teklify db)                      │         │                  │
-│  /home/Teklifler/*.pdf                     │         │  teklif.novem... │
+│  server/out/*.pdf (OUT_DIR)                │         │  teklif.novem... │
 └────────────────────────────────────────────┘         └──────────────────┘
 ```
 
@@ -121,7 +121,7 @@ bash deploy/start.sh
 | "Hatay Soslu Döner — Tayfun Dede için 4 adet 100 TL termal yazıcı teklifi" | `create_proposal` çağrılır, `previewUrl` döner |
 | "Adetı 6 yap" | `update_proposal` — aynı link, F5 yap |
 | "Notu sil" | `update_proposal({ patch: { note: null } })` |
-| "PDF ver" | Önce onay, sonra `generate_pdf`. PDF `/home/Teklifler/`'a düşer, link revoke |
+| "PDF ver" | Önce onay, sonra `generate_pdf`. PDF `OUT_DIR`'a (varsayılan `server/out/`) düşer, link revoke |
 | "Hatay'ın geçen ki teklifi nerde" | `search_proposals({ customerName: "Hatay" })` |
 | "Bunun kopyasını çıkar Manolya Kafe için" | `clone_proposal_for_customer` — yeni teklif no |
 | "Yeni revizyon hazırla, KDV %18" | `revise_proposal({ patch: { vatRate: 18 } })` |
@@ -170,7 +170,7 @@ client'ını (openclaw config'i, bkz. Adım 6) aynı token'ı header'da göndere
 
 ## PDF çıktıları
 
-`/home/Teklifler/NVM-2026-001_Hatay_Soslu_Doner_v1.00.pdf` formatında. Windows'tan: `\\wsl$\<distro>\home\Teklifler\`.
+`OUT_DIR` altına (varsayılan proje-içi `server/out/`) `NVM-2026-001_Hatay_Soslu_Doner_v1.00.pdf` formatında kaydedilir. `generate_pdf` yanıtındaki `windowsPath` alanı Windows'tan açılabilir `\\wsl$\<distro-adı>\...` yolunu döner.
 
 ## Kapanış
 

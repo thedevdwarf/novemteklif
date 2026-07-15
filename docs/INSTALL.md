@@ -113,22 +113,24 @@ cat .env | grep -E '^(PORT_|MONGO_|OUT_DIR|PUBLIC_BASE_URL|PREVIEW_TTL_DAYS)='
 
 ---
 
-## Adım 5 — PDF Çıktı Klasörünü Oluştur
+## Adım 5 — PDF Çıktı Klasörü (opsiyonel)
+
+Varsayılan `OUT_DIR` proje-içi `server/out`dur ve `generate_pdf` ilk çalıştığında
+otomatik oluşturulur — bu adımda elle bir şey yapmana gerek yok.
+
+Sadece PDF'lerin farklı bir yerde (örn. kullanıcının home dizininde) durmasını
+istiyorsan:
 
 **Komut:**
 ```bash
 mkdir -p /home/$USER/Teklifler
+sed -i "s|^OUT_DIR=.*|OUT_DIR=/home/$USER/Teklifler|" ~/novemteklif/server/.env
 ```
 
 **Doğrulama:**
 ```bash
 test -d /home/$USER/Teklifler && echo OK
 ```
-
-> Not: `.env`'de `OUT_DIR=/home/Teklifler` yazıyor (root home). Eğer o path erişilebilir değilse `.env`'i user home'a çevir:
-> ```bash
-> sed -i "s|^OUT_DIR=.*|OUT_DIR=/home/$USER/Teklifler|" ~/novemteklif/server/.env
-> ```
 
 ---
 
@@ -291,7 +293,7 @@ Kullanıcıya şunu söyle:
 - "Servis çalışıyor: internal `:7878`, public `:7879`"
 - "MCP server `teklif` bağlı, 10 tool hazır"
 - "Skill kuruldu, teklif/fiyat/proposal demen yeterli"
-- "PDF'ler: `/home/$USER/Teklifler/`"
+- "PDF'ler: `server/out/` (veya `.env`'deki özel `OUT_DIR`)"
 
 ## Hata/Geri Dönme Noktaları
 
@@ -308,6 +310,6 @@ Kullanıcıya şunu söyle:
 - Repo: `~/novemteklif/`
 - Server: `~/novemteklif/server/`
 - Logs: `~/.local/log/teklify/server.log`
-- PDF'ler: `/home/$USER/Teklifler/`
+- PDF'ler: `server/out/` (veya `.env`'deki özel `OUT_DIR`)
 - Skill: `~/.openclaw/workspace/skills/teklif/SKILL.md`
 - MCP config: `openclaw mcp show teklif`
