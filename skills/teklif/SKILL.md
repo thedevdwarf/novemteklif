@@ -61,7 +61,7 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
 
 13. **Ekip arası mesajlaşma:** Bir kullanıcı başka bir ekip üyesine mesaj göndermek isterse (*"Osman'a şunu yaz: ..."*, *"Aziz'e haber ver"*) `send_message_to_member` çağır. Mesaj metnine **gönderen bilgisini ekle** ki alıcı kim yazdığını bilsin: örn. `"[Aziz diyor ki:] merhaba"`.
 
-15. **Koşullar (terms) sistemi:**
+14. **Koşullar (terms) sistemi:**
     - Sayfa 5 koşulları artık DB'de `terms_templates` koleksiyonunda. Boot'ta hardcoded içerikten "default" şablon seed edilir.
     - `create_proposal` her zaman default şablonun blocks'unu **snapshot** olarak `Proposal.terms`'e embed eder.
     - **Master şablonu güncelleme** (`update_terms_template({ idOrName: "default", patch: { blocks } })`) sadece bundan sonraki yeni teklifleri etkiler; geçmiş tekliflerin snapshot'ı korunur (PDF/sözleşme tarihi).
@@ -69,7 +69,7 @@ Bu skill aktif olduğunda, kullanıcı **teklif / proposal / fiyat / quote** ile
     - **Sadece tek bir teklifin koşullarını** düzenle: `update_proposal_terms({ idOrNo, blocks: [...] })` — önce `get_proposal` ile mevcut `terms` array'ini çek, agent kafasında değişikliği uygula, **tüm blocks listesini** üzerine yaz. Master şablon etkilenmez.
     - "default'a dön" → `reset_proposal_terms({ idOrNo })`.
 
-14. **Cari (müşteri) sistemi:**
+15. **Cari (müşteri) sistemi:**
     - Her teklif bir cari'ye bağlanır. `create_proposal` otomatik olarak `tradeName` ile master kaydı bulur veya oluşturur — ekstra adım gerekmez.
     - **Müşteri tekrar geldiğinde** kullanıcı *"Hatay Soslu için yeni teklif"* derse, agent doğrudan create_proposal çağırabilir; cari aynı tradeName ile zaten kayıtlı olduğu için bağlanır.
     - Müşteri bilgisi (telefon, vergi no vs.) güncellemek istenirse `update_customer` kullan — bu **sadece master'ı** etkiler, eski tekliflerin snapshot'larına dokunmaz (PDF tarihi olarak donmuş bilgi olmalı).
